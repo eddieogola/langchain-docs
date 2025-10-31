@@ -119,7 +119,7 @@ The system prompt sets the LLM's behavior and capabilities. Different users, con
     import { createAgent } from "langchain";
 
     const agent = createAgent({
-      model: "openai:gpt-4o",
+      model: "gpt-4o",
       tools: [...],
       middleware: [
         dynamicSystemPromptMiddleware((state) => {
@@ -156,7 +156,7 @@ The system prompt sets the LLM's behavior and capabilities. Different users, con
     type Context = z.infer<typeof contextSchema>;
 
     const agent = createAgent({
-      model: "openai:gpt-4o",
+      model: "gpt-4o",
       tools: [...],
       contextSchema,
       middleware: [
@@ -199,7 +199,7 @@ The system prompt sets the LLM's behavior and capabilities. Different users, con
     type Context = z.infer<typeof contextSchema>;
 
     const agent = createAgent({
-      model: "openai:gpt-4o",
+      model: "gpt-4o",
       tools: [...],
       contextSchema,
       middleware: [
@@ -274,7 +274,7 @@ Reference these files when answering questions.`;
     });
 
     const agent = createAgent({
-      model: "openai:gpt-4o",
+      model: "gpt-4o",
       tools: [...],
       middleware: [injectFileContext],
     });
@@ -560,9 +560,9 @@ might change during an agent run.
     import { createMiddleware, initChatModel } from "langchain";
 
     // Initialize models once outside the middleware
-    const largeModel = initChatModel("anthropic:claude-sonnet-4-5");
-    const standardModel = initChatModel("openai:gpt-4o");
-    const efficientModel = initChatModel("openai:gpt-4o-mini");
+    const largeModel = initChatModel("claude-sonnet-4-5-20250929");
+    const standardModel = initChatModel("gpt-4o");
+    const efficientModel = initChatModel("gpt-4o-mini");
 
     const stateBasedModel = createMiddleware({
       name: "StateBasedModel",
@@ -601,9 +601,9 @@ might change during an agent run.
 
     // Initialize available models once
     const MODEL_MAP = {
-      "gpt-4o": initChatModel("openai:gpt-4o"),
-      "gpt-4o-mini": initChatModel("openai:gpt-4o-mini"),
-      "claude-sonnet": initChatModel("anthropic:claude-sonnet-4-5"),
+      "gpt-4o": initChatModel("gpt-4o"),
+      "gpt-4o-mini": initChatModel("gpt-4o-mini"),
+      "claude-sonnet": initChatModel("claude-sonnet-4-5-20250929"),
     };
 
     const storeBasedModel = createMiddleware({
@@ -647,9 +647,9 @@ might change during an agent run.
     });
 
     // Initialize models once outside the middleware
-    const premiumModel = initChatModel("anthropic:claude-sonnet-4-5");
-    const standardModel = initChatModel("openai:gpt-4o");
-    const budgetModel = initChatModel("openai:gpt-4o-mini");
+    const premiumModel = initChatModel("claude-sonnet-4-5-20250929");
+    const standardModel = initChatModel("gpt-4o");
+    const budgetModel = initChatModel("gpt-4o-mini");
 
     const contextBasedModel = createMiddleware({
       name: "ContextBasedModel",
@@ -970,7 +970,7 @@ Most real-world tools need more than just the LLM's parameters. They need user I
     );
 
     const agent = createAgent({
-      model: "openai:gpt-4o",
+      model: "gpt-4o",
       tools: [fetchUserData],
       contextSchema,
     });
@@ -1096,11 +1096,11 @@ LangChain offers built-in middleware for this:
 import { createAgent, summarizationMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [
     summarizationMiddleware({
-      model: "openai:gpt-4o-mini",
+      model: "gpt-4o-mini",
       maxTokensBeforeSummary: 4000, // Trigger summarization at 4000 tokens
       messagesToKeep: 20, // Keep last 20 messages after summary
     }),

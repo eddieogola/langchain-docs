@@ -83,7 +83,7 @@ const getWeather = tool(
 );
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [getWeather]
 });
 
@@ -161,7 +161,7 @@ const getEvents = tool(
 );
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [getWeather, getEvents]
 });
 
@@ -246,7 +246,7 @@ const getDetailedForecast = tool(
 );
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [getWeather, getDetailedForecast]
 });
 
@@ -324,7 +324,7 @@ const getWeather = tool(
 );
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [getWeather]
 });
 

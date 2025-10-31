@@ -686,8 +686,8 @@ print(graph.invoke({}, context={"my_runtime_value": "b"}))  # [!code highlight]
       model_provider: str = "anthropic"
 
   MODELS = {
-      "anthropic": init_chat_model("anthropic:claude-3-5-haiku-latest"),
-      "openai": init_chat_model("openai:gpt-4.1-mini"),
+      "anthropic": init_chat_model("claude-haiku-4-5-20251001"),
+      "openai": init_chat_model("gpt-4.1-mini"),
   }
 
   def call_model(state: MessagesState, runtime: Runtime[ContextSchema]):
@@ -714,7 +714,7 @@ print(graph.invoke({}, context={"my_runtime_value": "b"}))  # [!code highlight]
   ```
 
   ```
-  claude-3-5-haiku-20241022
+  claude-haiku-4-5-20251001
   gpt-4.1-mini-2025-04-14
   ```
 
@@ -739,8 +739,8 @@ print(graph.invoke({}, context={"my_runtime_value": "b"}))  # [!code highlight]
       system_message: str | None = None
 
   MODELS = {
-      "anthropic": init_chat_model("anthropic:claude-3-5-haiku-latest"),
-      "openai": init_chat_model("openai:gpt-4.1-mini"),
+      "anthropic": init_chat_model("claude-haiku-4-5-20251001"),
+      "openai": init_chat_model("gpt-4.1-mini"),
   }
 
   def call_model(state: MessagesState, runtime: Runtime[ContextSchema]):
@@ -827,7 +827,7 @@ In addition, for exceptions from popular http request libraries such as `request
   from langchain.messages import AIMessage
 
   db = SQLDatabase.from_uri("sqlite:///:memory:")
-  model = init_chat_model("anthropic:claude-3-5-haiku-latest")
+  model = init_chat_model("claude-haiku-4-5-20251001")
 
   def query_database(state: MessagesState):
       query_result = db.run("SELECT * FROM Artist LIMIT 10;")

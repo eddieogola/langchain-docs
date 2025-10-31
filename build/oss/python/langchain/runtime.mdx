@@ -36,7 +36,7 @@ class Context:
     user_name: str
 
 agent = create_agent(
-    model="openai:gpt-5-nano",
+    model="gpt-5-nano",
     tools=[...],
     context_schema=Context  # [!code highlight]
 )
@@ -121,7 +121,7 @@ def log_after_model(state: AgentState, runtime: Runtime[Context]) -> dict | None
     return None
 
 agent = create_agent(
-    model="openai:gpt-5-nano",
+    model="gpt-5-nano",
     tools=[...],
     middleware=[dynamic_system_prompt, log_before_model, log_after_model],  # [!code highlight]
     context_schema=Context

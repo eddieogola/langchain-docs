@@ -63,7 +63,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.postgres import PostgresSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable"
       with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -106,7 +106,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable"
       async with AsyncPostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -166,7 +166,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.mongodb import MongoDBSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "localhost:27017"
       with MongoDBSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -208,7 +208,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.mongodb.aio import AsyncMongoDBSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "localhost:27017"
       async with AsyncMongoDBSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -263,7 +263,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.redis import RedisSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "redis://localhost:6379"
       with RedisSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -306,7 +306,7 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
       from langgraph.graph import StateGraph, MessagesState, START
       from langgraph.checkpoint.redis.aio import AsyncRedisSaver  # [!code highlight]
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "redis://localhost:6379"
       async with AsyncRedisSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight]
@@ -444,7 +444,7 @@ with PostgresStore.from_conn_string(DB_URI) as store:  # [!code highlight]
       from langgraph.store.postgres import PostgresStore  # [!code highlight]
       from langgraph.store.base import BaseStore
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable"
 
@@ -524,7 +524,7 @@ with PostgresStore.from_conn_string(DB_URI) as store:  # [!code highlight]
       from langgraph.store.postgres.aio import AsyncPostgresStore  # [!code highlight]
       from langgraph.store.base import BaseStore
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable"
 
@@ -620,7 +620,7 @@ with PostgresStore.from_conn_string(DB_URI) as store:  # [!code highlight]
       from langgraph.store.redis import RedisStore  # [!code highlight]
       from langgraph.store.base import BaseStore
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "redis://localhost:6379"
 
@@ -700,7 +700,7 @@ with PostgresStore.from_conn_string(DB_URI) as store:  # [!code highlight]
       from langgraph.store.redis.aio import AsyncRedisStore  # [!code highlight]
       from langgraph.store.base import BaseStore
 
-      model = init_chat_model(model="anthropic:claude-3-5-haiku-latest")
+      model = init_chat_model(model="claude-haiku-4-5-20251001")
 
       DB_URI = "redis://localhost:6379"
 
@@ -812,7 +812,7 @@ items = store.search(
     from langgraph.store.memory import InMemoryStore
     from langgraph.graph import START, MessagesState, StateGraph
 
-    model = init_chat_model("openai:gpt-4o-mini")
+    model = init_chat_model("gpt-4o-mini")
 
     # Create store with semantic search enabled
     embeddings = init_embeddings("openai:text-embedding-3-small")
@@ -913,7 +913,7 @@ builder.add_node(call_model)
   from langchain.chat_models import init_chat_model
   from langgraph.graph import StateGraph, START, MessagesState
 
-  model = init_chat_model("anthropic:claude-sonnet-4-5")
+  model = init_chat_model("claude-sonnet-4-5-20250929")
   summarization_model = model.bind(max_tokens=128)
 
   def call_model(state: MessagesState):
@@ -1096,7 +1096,7 @@ def summarize_conversation(state: State):
   from langgraph.checkpoint.memory import InMemorySaver
   from langmem.short_term import SummarizationNode, RunningSummary  # [!code highlight]
 
-  model = init_chat_model("anthropic:claude-sonnet-4-5")
+  model = init_chat_model("claude-sonnet-4-5-20250929")
   summarization_model = model.bind(max_tokens=128)
 
   class State(MessagesState):

@@ -56,7 +56,7 @@ import {
 } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [summarizationMiddleware, humanInTheLoopMiddleware],
 });
@@ -84,11 +84,11 @@ Automatically summarize conversation history when approaching token limits.
 import { createAgent, summarizationMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [weatherTool, calculatorTool],
   middleware: [
     summarizationMiddleware({
-      model: "openai:gpt-4o-mini",
+      model: "gpt-4o-mini",
       maxTokensBeforeSummary: 4000, // Trigger summarization at 4000 tokens
       messagesToKeep: 20, // Keep last 20 messages after summary
       summaryPrompt: "Custom prompt for summarization...", // Optional
@@ -146,7 +146,7 @@ Pause agent execution for human approval, editing, or rejection of tool calls be
 import { createAgent, humanInTheLoopMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [readEmailTool, sendEmailTool],
   middleware: [
     humanInTheLoopMiddleware({
@@ -224,7 +224,7 @@ Please be a helpful assistant.
 `;
 
 const agent = createAgent({
-  model: "anthropic:claude-sonnet-4-latest",
+  model: "claude-sonnet-4-5-20250929",
   prompt: LONG_PROMPT,
   middleware: [anthropicPromptCachingMiddleware({ ttl: "5m" })],
 });
@@ -269,7 +269,7 @@ Limit the number of model calls to prevent infinite loops or excessive costs.
 import { createAgent, modelCallLimitMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [
     modelCallLimitMiddleware({
@@ -328,7 +328,7 @@ const searchLimiter = toolCallLimitMiddleware({
 });
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [globalLimiter, searchLimiter],
 });
@@ -375,12 +375,12 @@ Automatically fallback to alternative models when the primary model fails.
 import { createAgent, modelFallbackMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o", // Primary model
+  model: "gpt-4o", // Primary model
   tools: [...],
   middleware: [
     modelFallbackMiddleware(
-      "openai:gpt-4o-mini", // Try first on error
-      "anthropic:claude-3-5-sonnet-20241022" // Then this
+      "gpt-4o-mini", // Try first on error
+      "claude-3-5-sonnet-20241022" // Then this
     ),
   ],
 });
@@ -425,7 +425,7 @@ Detect and handle Personally Identifiable Information in conversations.
 import { createAgent, piiRedactionMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [
     // Redact emails in user input
@@ -500,7 +500,7 @@ This middleware automatically provides agents with a `write_todos` tool and syst
 import { createAgent, HumanMessage, todoListMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [
     /* ... */
   ],
@@ -540,11 +540,11 @@ Use an LLM to intelligently select relevant tools before calling the main model.
 import { createAgent, llmToolSelectorMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [tool1, tool2, tool3, tool4, tool5, ...], // Many tools
   middleware: [
     llmToolSelectorMiddleware({
-      model: "openai:gpt-4o-mini", // Use cheaper model for selection
+      model: "gpt-4o-mini", // Use cheaper model for selection
       maxTools: 3, // Limit to 3 most relevant tools
       alwaysInclude: ["search"], // Always include certain tools
     }),
@@ -593,7 +593,7 @@ Manage conversation context by trimming, summarizing, or clearing tool uses.
 import { createAgent, contextEditingMiddleware, ClearToolUsesEdit } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [
     contextEditingMiddleware({
@@ -753,9 +753,9 @@ const dynamicModelMiddleware = createMiddleware({
     // Use different model based on conversation length
     const modifiedRequest = { ...request };
     if (request.messages.length > 10) {
-      modifiedRequest.model = initChatModel("openai:gpt-4o");
+      modifiedRequest.model = initChatModel("gpt-4o");
     } else {
-      modifiedRequest.model = initChatModel("openai:gpt-4o-mini");
+      modifiedRequest.model = initChatModel("gpt-4o-mini");
     }
     return handler(modifiedRequest);
   },
@@ -825,7 +825,7 @@ const callCounterMiddleware = createMiddleware({
 
 ```typescript
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [...],
   middleware: [callCounterMiddleware] as const,
 });
@@ -892,7 +892,7 @@ When using multiple middleware, understanding execution order is important:
 
 ```typescript
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   middleware: [middleware1, middleware2, middleware3],
   tools: [...],
 });
@@ -1029,7 +1029,7 @@ const toolSelectorMiddleware = createMiddleware({
 });
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: allTools, // All available tools need to be registered upfront
   // Middleware can be used to select a smaller subset that's relevant for the given run.
   middleware: [toolSelectorMiddleware],
@@ -1084,7 +1084,7 @@ const toolSelector = createMiddleware({
 });
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: allTools,
   middleware: [toolSelector],
 });

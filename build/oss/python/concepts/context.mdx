@@ -63,7 +63,7 @@ graph.invoke(
         return f"You are a helpful assistant. Address the user as {user_name}."
 
     agent = create_agent(
-        model="anthropic:claude-sonnet-4-5",
+        model="claude-sonnet-4-5-20250929",
         tools=[get_weather],
         middleware=[personalized_prompt],
         context_schema=ContextSchema
@@ -138,7 +138,7 @@ graph.invoke(
         return f"You are a helpful assistant. User's name is {user_name}"
 
     agent = create_agent(
-        model="anthropic:claude-sonnet-4-5",
+        model="claude-sonnet-4-5-20250929",
         tools=[...],
         state_schema=CustomState,  # [!code highlight]
         middleware=[personalized_prompt],  # [!code highlight]

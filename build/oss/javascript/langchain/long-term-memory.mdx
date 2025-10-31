@@ -106,7 +106,7 @@ const getUserInfo = tool(
 );
 
 const agent = createAgent({
-    model: "openai:gpt-4o-mini",
+    model: "gpt-4o-mini",
     tools: [getUserInfo],
     contextSchema,
     // Pass store to agent - enables agent to access store when running tools
@@ -171,7 +171,7 @@ const saveUserInfo = tool(
 );
 
 const agent = createAgent({
-    model: "openai:gpt-4o-mini",
+    model: "gpt-4o-mini",
     tools: [saveUserInfo],
     contextSchema,
     store, // [!code highlight]

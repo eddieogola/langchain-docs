@@ -510,7 +510,7 @@ We'll implement each node as a simple function. Remember: nodes take state, do w
         """Pause for human review using interrupt and route based on decision"""
 
         classification = state.get('classification', {})
-        
+
         # interrupt() must come first - any code before it will re-run on resume
         human_decision = interrupt({
             "email_id": state.get('email_id',''),

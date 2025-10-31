@@ -74,7 +74,7 @@ my_workflow.invoke({"value": 1, "another_value": 2})
   from langgraph.func import entrypoint, task
   from langgraph.checkpoint.memory import InMemorySaver
 
-  model = init_chat_model('openai:gpt-3.5-turbo')
+  model = init_chat_model('gpt-3.5-turbo')
 
   # Task: generate essay using an LLM
   @task
@@ -131,7 +131,7 @@ def graph(numbers: list[int]) -> list[str]:
   from langgraph.checkpoint.memory import InMemorySaver
 
   # Initialize the LLM model
-  model = init_chat_model("openai:gpt-3.5-turbo")
+  model = init_chat_model("gpt-3.5-turbo")
 
   # Task that generates a paragraph about a given topic
   @task
@@ -849,7 +849,7 @@ from langgraph.func import entrypoint, task
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_anthropic import ChatAnthropic
 
-model = ChatAnthropic(model="claude-sonnet-4-5")
+model = ChatAnthropic(model="claude-sonnet-4-5-20250929")
 
 @task
 def call_model(messages: list[BaseMessage]):

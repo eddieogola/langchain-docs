@@ -47,7 +47,7 @@ function searchWeb(query: string): string {
 }
 
 const agent = createAgent({
-    model: "openai:gpt-4o",
+    model: "gpt-4o",
     tools: [sendEmail, searchWeb],
     systemPrompt: "You are a helpful assistant that can send emails and search the web."
 });

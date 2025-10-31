@@ -60,7 +60,7 @@ The PII middleware supports multiple strategies for handling detected PII:
 import { createAgent, piiRedactionMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [customerServiceTool, emailTool],
   middleware: [
     // Redact emails in user input before sending to model
@@ -135,7 +135,7 @@ import { createAgent, humanInTheLoopMiddleware } from "langchain";
 import { MemorySaver, Command } from "@langchain/langgraph";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [searchTool, sendEmailTool, deleteDatabaseTool],
   middleware: [
     humanInTheLoopMiddleware({
@@ -226,7 +226,7 @@ const contentFilterMiddleware = (bannedKeywords: string[]) => {
 import { createAgent } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [searchTool, calculatorTool],
   middleware: [
     contentFilterMiddleware(["hack", "exploit", "malware"]),
@@ -250,7 +250,7 @@ Use "after agent" hooks to validate final outputs once before returning to the u
 import { createMiddleware, AIMessage, initChatModel } from "langchain";
 
 const safetyGuardrailMiddleware = () => {
-  const safetyModel = initChatModel("openai:gpt-4o-mini");
+  const safetyModel = initChatModel("gpt-4o-mini");
 
   return createMiddleware({
     name: "SafetyGuardrailMiddleware",
@@ -295,7 +295,7 @@ const safetyGuardrailMiddleware = () => {
 import { createAgent } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [searchTool, calculatorTool],
   middleware: [safetyGuardrailMiddleware()],
 });
@@ -316,7 +316,7 @@ You can stack multiple guardrails by adding them to the middleware array. They e
 import { createAgent, piiRedactionMiddleware, humanInTheLoopMiddleware } from "langchain";
 
 const agent = createAgent({
-  model: "openai:gpt-4o",
+  model: "gpt-4o",
   tools: [searchTool, sendEmailTool],
   middleware: [
     // Layer 1: Deterministic input filter (before agent)

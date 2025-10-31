@@ -43,7 +43,7 @@ import { createAgent, humanInTheLoopMiddleware } from "langchain"; // [!code hig
 import { MemorySaver } from "@langchain/langgraph"; // [!code highlight]
 
 const agent = createAgent({
-    model: "openai:gpt-4o",
+    model: "gpt-4o",
     tools: [writeFileTool, executeSQLTool, readDataTool],
     middleware: [
         humanInTheLoopMiddleware({

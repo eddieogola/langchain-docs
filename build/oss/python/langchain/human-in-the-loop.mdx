@@ -43,7 +43,7 @@ from langgraph.checkpoint.memory import InMemorySaver # [!code highlight]
 
 
 agent = create_agent(
-    model="openai:gpt-4o",
+    model="gpt-4o",
     tools=[write_file_tool, execute_sql_tool, read_data_tool],
     middleware=[
         HumanInTheLoopMiddleware( # [!code highlight]

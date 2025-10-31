@@ -72,7 +72,7 @@ const graph = builder.compile({ checkpointer });
       .register(registry, MessagesZodMeta),
   });
 
-  const model = new ChatAnthropic({ model: "claude-3-5-haiku-20241022" });
+  const model = new ChatAnthropic({ model: "claude-haiku-4-5-20251001" });
 
   const DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable";
   const checkpointer = PostgresSaver.fromConnString(DB_URI);
@@ -210,7 +210,7 @@ const graph = builder.compile({ store });
       .register(registry, MessagesZodMeta),
   });
 
-  const model = new ChatAnthropic({ model: "claude-3-5-haiku-20241022" });
+  const model = new ChatAnthropic({ model: "claude-haiku-4-5-20251001" });
 
   const DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable";
 
@@ -673,7 +673,7 @@ const summarizeConversation = async (state: z.infer<typeof State>) => {
   });
 
   // We will use this model for both the conversation and the summarization
-  const model = new ChatAnthropic({ model: "claude-3-haiku-20240307" });
+  const model = new ChatAnthropic({ model: "claude-haiku-4-5-20251001" });
 
   // Define the logic to call the model
   const callModel = async (state: z.infer<typeof GraphState>) => {
