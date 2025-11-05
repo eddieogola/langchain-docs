@@ -1,9 +1,13 @@
 ---
-title: LangGraph Server changelog
-sidebarTitle: LangGraph Server changelog
+title: Agent Server changelog
+sidebarTitle: Agent Server changelog
 ---
 
-[LangGraph Server](/langsmith/langgraph-server) is an API platform for creating and managing agent-based applications. It provides built-in persistence, a task queue, and supports deploying, configuring, and running assistants (agentic workflows) at scale. This changelog documents all notable updates, features, and fixes to LangGraph Server releases.
+[Agent Server](/langsmith/agent-server) is an API platform for creating and managing agent-based applications. It provides built-in persistence, a task queue, and supports deploying, configuring, and running assistants (agentic workflows) at scale. This changelog documents all notable updates, features, and fixes to Agent Server releases.
+
+<a id="2025-11-05"></a>
+## v0.5.4
+- Implemented `ormsgpack` with `OPT_REPLACE_SURROGATES` and updated for compatibility with the latest FastAPI release affecting custom authentication dependencies.
 
 <a id="2025-11-03"></a>
 ## v0.5.2
@@ -688,7 +692,7 @@ sidebarTitle: LangGraph Server changelog
 ---
 
 <Callout icon="pen-to-square" iconType="regular">
-    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/langsmith/langgraph-server-changelog.mdx)
+    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/langsmith/agent-server-changelog.mdx)
 </Callout>
 <Tip icon="terminal" iconType="regular">
     [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for    real-time answers.
