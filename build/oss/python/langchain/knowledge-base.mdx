@@ -233,7 +233,11 @@ Once we've instantiated a [`VectorStore`](https://reference.langchain.com/python
 - Synchronously and asynchronously;
 - By string query and by vector;
 - With and without returning similarity scores;
-- By similarity and @[maximum marginal relevance][VectorStore.max_marginal_relevance_search] (to balance similarity with query to diversity in retrieved results).
+- By similarity and [maximum marginal relevance](https://reference.langchain.com/python/langchain_core/vectorstores/?h=#langchain_core.vectorstores.base.VectorStore.max_marginal_relevance_search) (to balance similarity with query to diversity in retrieved results).
+
+
+
+
 
 The methods will generally include a list of [Document](https://reference.langchain.com/python/langchain_core/documents/#langchain_core.documents.base.Document) objects in their outputs.
 
@@ -345,7 +349,7 @@ Learn more:
 
 ## 4. Retrievers
 
-LangChain [`VectorStore`](https://reference.langchain.com/python/langchain_core/vectorstores/?h=#langchain_core.vectorstores.base.VectorStore) objects do not subclass @[Runnable]. LangChain @[Retrievers] are Runnables, so they implement a standard set of methods (e.g., synchronous and asynchronous `invoke` and `batch` operations). Although we can construct retrievers from vector stores, retrievers can interface with non-vector store sources of data, as well (such as external APIs).
+LangChain [`VectorStore`](https://reference.langchain.com/python/langchain_core/vectorstores/?h=#langchain_core.vectorstores.base.VectorStore) objects do not subclass [Runnable](https://reference.langchain.com/python/langchain_core/runnables/#langchain_core.runnables.Runnable). LangChain [Retrievers](https://reference.langchain.com/python/langchain_core/retrievers/#langchain_core.retrievers.BaseRetriever) are Runnables, so they implement a standard set of methods (e.g., synchronous and asynchronous `invoke` and `batch` operations). Although we can construct retrievers from vector stores, retrievers can interface with non-vector store sources of data, as well (such as external APIs).
 
 We can create a simple version of this ourselves, without subclassing `Retriever`. If we choose what method we wish to use to retrieve documents, we can create a runnable easily. Below we will build one around the `similarity_search` method:
 

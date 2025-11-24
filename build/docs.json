@@ -145,13 +145,7 @@
                   "tab": "LangChain",
                   "pages": [
                     "oss/python/langchain/overview",
-                    {
-                      "group": "LangChain v1.0",
-                      "pages": [
-                        "oss/python/releases/langchain-v1",
-                        "oss/python/migrate/langchain-v1"
-                      ]
-                    },
+                    "oss/python/releases/changelog",
                     {
                       "group": "Get started",
                       "pages": [
@@ -414,6 +408,7 @@
                       "group": "Releases",
                       "pages": [
                         "oss/python/versioning",
+                        "oss/python/releases/changelog",
                         {
                           "group": "Releases",
                           "pages": [
@@ -486,13 +481,7 @@
                   "tab": "LangChain",
                   "pages": [
                     "oss/javascript/langchain/overview",
-                    {
-                      "group": "LangChain v1.0",
-                      "pages": [
-                        "oss/javascript/releases/langchain-v1",
-                        "oss/javascript/migrate/langchain-v1"
-                      ]
-                    },
+                    "oss/javascript/releases/changelog",
                     {
                       "group": "Get started",
                       "pages": [
@@ -789,6 +778,7 @@
                       "group": "Releases",
                       "pages": [
                         "oss/javascript/versioning",
+                        "oss/javascript/releases/changelog",
                         {
                           "group": "Releases",
                           "pages": [

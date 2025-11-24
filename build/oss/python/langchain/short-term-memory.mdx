@@ -115,6 +115,7 @@ result = agent.invoke(
 
 
 
+
 ## Common patterns
 
 With [short-term memory](#add-short-term-memory) enabled, long conversations can exceed the LLM's context window. Common solutions are:
@@ -436,7 +437,7 @@ def update_user_info(
 @tool
 def greet(
     runtime: ToolRuntime[CustomContext, CustomState]
-) -> str:
+) -> str | Command:
     """Use this to greet the user once you found their info."""
     user_name = runtime.state.get("user_name", None)
     if user_name is None:
@@ -534,6 +535,7 @@ Hi John Smith, the weather in San Francisco is always sunny!
 Access short term memory (state) in [`@before_model`](https://reference.langchain.com/python/langchain/middleware/#langchain.agents.middleware.before_model) middleware to process messages before model calls.
 
 
+
 ```mermaid
 %%{
     init: {
@@ -619,6 +621,7 @@ If you'd like me to call you a nickname or use a different name, just say the wo
 ### After model
 
 Access short term memory (state) in [`@after_model`](https://reference.langchain.com/python/langchain/middleware/#langchain.agents.middleware.after_model) middleware to process messages after model calls.
+
 
 ```mermaid
 %%{

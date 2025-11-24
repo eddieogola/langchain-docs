@@ -1,6 +1,6 @@
 ---
 title: LangChain v1 migration guide
-sidebarTitle: Migration guide
+sidebarTitle: v1 Migration guide
 ---
 
 This guide outlines the major changes between [LangChain v1](/oss/python/releases/langchain-v1) and previous versions.
@@ -728,7 +728,7 @@ result = agent.invoke(
 
 ## Standard content
 
-In v1, messages gain provider-agnostic standard content blocks. Access them via @[`message.content_blocks`][content_blocks] for a consistent, typed view across providers. The existing [`message.content`](https://reference.langchain.com/python/langchain_core/language_models/#langchain_core.messages.BaseMessage.content_blocks) field remains unchanged for strings or provider-native structures.
+In v1, messages gain provider-agnostic standard content blocks. Access them via [`message.content_blocks`](https://reference.langchain.com/python/langchain_core/language_models/#langchain_core.messages.BaseMessage.content_blocks) for a consistent, typed view across providers. The existing [`message.content`](https://reference.langchain.com/python/langchain_core/language_models/#langchain_core.messages.BaseMessage.content_blocks) field remains unchanged for strings or provider-native structures.
 
 ### What changed
 

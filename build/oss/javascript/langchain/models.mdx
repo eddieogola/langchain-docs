@@ -36,7 +36,7 @@ The same model interface works in both contexts, which gives you the flexibility
 ### Initialize a model
 
 
-The easiest way to get started with a standalone model in LangChain is to use `initChatModel` to initialize one from a [provider](/oss/javascript/integrations/providers/overview) of your choice (examples below):
+The easiest way to get started with a standalone model in LangChain is to use `initChatModel` to initialize one from a [chat model provider](/oss/javascript/integrations/chat) of your choice (examples below):
 
 <ChatModelTabsJS />
 ```typescript
@@ -110,7 +110,7 @@ const model = await initChatModel(
 <Info>
     Each chat model integration may have additional params used to control provider-specific functionality.
 
-    For example, @[`ChatOpenAI`] has `use_responses_api` to dictate whether to use the OpenAI Responses or Completions API.
+    For example, [`ChatOpenAI`](https://reference.langchain.com/javascript/classes/_langchain_openai.ChatOpenAI.html) has `use_responses_api` to dictate whether to use the OpenAI Responses or Completions API.
 
     To find all the parameters supported by a given chat model, head to the [chat model integrations](/oss/javascript/integrations/chat) page.
 </Info>
@@ -166,7 +166,7 @@ console.log(response);  // AIMessage("J'adore créer des applications.")
 
 
 <Info>
-    If the return type of your invocation is a string, ensure that you are using a chat model as opposed to a LLM. Legacy, text-completion LLMs return strings directly. LangChain chat models are prefixed with "Chat", e.g., @[`ChatOpenAI`](/oss/javascript/integrations/chat/openai).
+    If the return type of your invocation is a string, ensure that you are using a chat model as opposed to a LLM. Legacy, text-completion LLMs return strings directly. LangChain chat models are prefixed with "Chat", e.g., [`ChatOpenAI`](https://reference.langchain.com/javascript/classes/_langchain_openai.ChatOpenAI.html)(/oss/integrations/chat/openai).
 </Info>
 
 ### Stream
@@ -277,7 +277,7 @@ The resulting message can be treated the same as a message that was generated wi
 
         #### How it works
 
-        When you `invoke()` a chat model, LangChain will automatically switch to an internal streaming mode if it detects that you are trying to stream the overall application. The result of the invocation will be the same as far as the code that was using invoke is concerned; however, while the chat model is being streamed, LangChain will take care of invoking @[`on_llm_new_token`] events in LangChain's callback system.
+        When you `invoke()` a chat model, LangChain will automatically switch to an internal streaming mode if it detects that you are trying to stream the overall application. The result of the invocation will be the same as far as the code that was using invoke is concerned; however, while the chat model is being streamed, LangChain will take care of invoking [`on_llm_new_token`](https://reference.langchain.com/javascript/interfaces/_langchain_core.callbacks_base.BaseCallbackHandlerMethods.html#onLlmNewToken) events in LangChain's callback system.
 
 
         Callback events allow LangGraph `stream()` and `streamEvents()` to surface the chat model's output in real-time.
@@ -441,7 +441,7 @@ Below, we show some common ways you can use tool calling.
 
 
 
-        Each @[`ToolMessage`] returned by the tool includes a `tool_call_id` that matches the original tool call, helping the model correlate results with requests.
+        Each [`ToolMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.ToolMessage.html) returned by the tool includes a `tool_call_id` that matches the original tool call, helping the model correlate results with requests.
     </Accordion>
     <Accordion title="Forcing tool calls" icon="asterisk">
         By default, the model has the freedom to choose which bound tool to use based on the user's input. However, you might want to force choosing a tool, ensuring the model uses either a particular tool or **any** tool from a given list:
@@ -499,7 +499,7 @@ Below, we show some common ways you can use tool calling.
         </Tip>
     </Accordion>
     <Accordion title="Streaming tool calls" icon="rss">
-        When streaming responses, tool calls are progressively built through @[`ToolCallChunk`]. This allows you to see tool calls as they're being generated rather than waiting for the complete response.
+        When streaming responses, tool calls are progressively built through [`ToolCallChunk`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.ToolCallChunk.html). This allows you to see tool calls as they're being generated rather than waiting for the complete response.
 
 
         ```typescript Streaming tool calls
@@ -625,14 +625,14 @@ Models can be requested to provide their response in a format matching a given s
     **Key considerations for structured output:**
 
     - **Method parameter**: Some providers support different methods (`'jsonSchema'`, `'functionCalling'`, `'jsonMode'`)
-    - **Include raw**: Use @[`includeRaw: true`][BaseChatModel.with_structured_output(include_raw)] to get both the parsed output and the raw [`AIMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.AIMessage.html)
+    - **Include raw**: Use [`includeRaw: true`](https://reference.langchain.com/javascript/classes/_langchain_core.language_models_chat_models.BaseChatModel.html#withStructuredOutput) to get both the parsed output and the raw [`AIMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.AIMessage.html)
     - **Validation**: Zod models provide automatic validation, while JSON Schema requires manual validation
 </Note>
 
 
 <Accordion title="Example: Message output alongside parsed structure">
 
-It can be useful to return the raw [`AIMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.AIMessage.html) object alongside the parsed representation to access response metadata such as [token counts](#token-usage). To do this, set @[`include_raw=True`][BaseChatModel.with_structured_output(include_raw)] when calling @[`with_structured_output`][BaseChatModel.with_structured_output]:
+It can be useful to return the raw [`AIMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.AIMessage.html) object alongside the parsed representation to access response metadata such as [token counts](#token-usage). To do this, set [`include_raw=True`](https://reference.langchain.com/javascript/classes/_langchain_core.language_models_chat_models.BaseChatModel.html#withStructuredOutput) when calling [`with_structured_output`](https://reference.langchain.com/javascript/classes/_langchain_core.language_models_chat_models.BaseChatModel.html#withStructuredOutput):
 
 
 
@@ -704,7 +704,8 @@ LangChain supports all major model providers, including OpenAI, Anthropic, Googl
 
 
 
-LangChain chat models expose supported features and capabilities through a `.profile` property:
+LangChain chat models can expose a dictionary of supported features and capabilities through a `.profile` property:
+
 ```typescript
 model.profile;
 // {
@@ -715,38 +716,43 @@ model.profile;
 //   ...
 // }
 ```
+
 Refer to the full set of fields in the [API reference](https://reference.langchain.com/javascript/interfaces/_langchain_core.language_models_profile.ModelProfile.html).
 
-Much of the model profile data is powered by the [models.dev](https://github.com/sst/models.dev) project, an open source initiative that provides model capability data. These data are augmented with additional fields for purposes of use with LangChain. These augmentations are kept aligned with the upstream project as it evolves.
+Much of the model profile data is powered by the [models.dev](https://github.com/sst/models.dev) project, an open source initiative that provides model capability data. This data is augmented with additional fields for purposes of use with LangChain. These augmentations are kept aligned with the upstream project as it evolves.
 
 Model profile data allow applications to work around model capabilities dynamically. For example:
+
 1. [Summarization middleware](/oss/javascript/langchain/middleware/built-in#summarization) can trigger summarization based on a model's context window size.
 2. [Structured output](/oss/javascript/langchain/structured-output) strategies in `createAgent` can be inferred automatically (e.g., by checking support for native structured output features).
 3. Model inputs can be gated based on supported [modalities](#multimodal) and maximum input tokens.
 
-#### Updating or overwriting profile data
-Model profile data can be changed if it is missing, stale, or incorrect.
+<Accordion title="Modify profile data">
+    Model profile data can be changed if it is missing, stale, or incorrect.
 
-**Option 1 (quick fix)**
+    **Option 1 (quick fix)**
 
-You can instantiate a chat model with any valid profile:
-```typescript
-const customProfile = {
-  maxInputTokens: 100_000,
-  toolCalling: true,
-  structuredOutput: true,
-  // ...
-};
-const model = initChatModel("...", { profile: customProfile });
-```
+    You can instantiate a chat model with any valid profile:
 
-**Option 2 (fix data upstream)**
+    ```typescript
+    const customProfile = {
+    maxInputTokens: 100_000,
+    toolCalling: true,
+    structuredOutput: true,
+    // ...
+    };
+    const model = initChatModel("...", { profile: customProfile });
+    ```
 
-The primary source for the data is the [models.dev](https://models.dev/) project. These data are merged with additional fields and overrides in LangChain [integration packages](/oss/javascript/javascript/integrations/providers/overview) and are shipped with those packages.
+    **Option 2 (fix data upstream)**
 
-Model profile data can be updated through the following process:
-1. (If needed) update the source data at [models.dev](https://models.dev/) through a pull request to its [repository on Github](https://github.com/sst/models.dev).
-2. (If needed) update additional fields and overrides in `langchain-<package>/profiles.toml` through a pull request to the LangChain [integration package](/oss/javascript/javascript/integrations/providers/overview).
+    The primary source for the data is the [models.dev](https://models.dev/) project. These data are merged with additional fields and overrides in LangChain [integration packages](/oss/javascript/integrations/providers/overview) and are shipped with those packages.
+
+    Model profile data can be updated through the following process:
+
+    1. (If needed) update the source data at [models.dev](https://models.dev/) through a pull request to its [repository on Github](https://github.com/sst/models.dev).
+    2. (If needed) update additional fields and overrides in `langchain-<package>/profiles.toml` through a pull request to the LangChain [integration package](/oss/javascript/integrations/providers/overview).
+</Accordion>
 
 
 
@@ -822,7 +828,7 @@ Many providers offer prompt caching features to reduce latency and cost on repea
 
 - **Implicit prompt caching:** providers will automatically pass on cost savings if a request hits a cache. Examples: [OpenAI](/oss/javascript/integrations/chat/openai) and [Gemini](/oss/javascript/integrations/chat/google_generative_ai).
 - **Explicit caching:** providers allow you to manually indicate cache points for greater control or to guarantee cost savings. Examples:
-    - @[`ChatOpenAI`] (via `prompt_cache_key`)
+    - [`ChatOpenAI`](https://reference.langchain.com/javascript/classes/_langchain_openai.ChatOpenAI.html) (via `prompt_cache_key`)
     - Anthropic's [`AnthropicPromptCachingMiddleware`](/oss/javascript/integrations/chat/anthropic#prompt-caching)
     - [Gemini](https://python.langchain.com/api_reference/google_genai/chat_models/langchain_google_genai.chat_models.ChatGoogleGenerativeAI.html).
     - [AWS Bedrock](/oss/javascript/integrations/chat/bedrock#prompt-caching)

@@ -99,7 +99,7 @@ const response = await model.invoke(messages);
 
 ### System Message
 
-A @[`SystemMessage`] represent an initial set of instructions that primes the model's behavior. You can use a system message to set the tone, define the model's role, and establish guidelines for responses.
+A [`SystemMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.SystemMessage.html) represent an initial set of instructions that primes the model's behavior. You can use a system message to set the tone, define the model's role, and establish guidelines for responses.
 
 
 
@@ -139,7 +139,7 @@ const response = await model.invoke(messages);
 
 ### Human Message
 
-A @[`HumanMessage`] represents user input and interactions. They can contain text, images, audio, files, and any other amount of multimodal [content](#message-content).
+A [`HumanMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.HumanMessage.html) represents user input and interactions. They can contain text, images, audio, files, and any other amount of multimodal [content](#message-content).
 
 #### Text content
 
@@ -319,7 +319,7 @@ Learn more:
 
 For models that support [tool calling](/oss/javascript/langchain/models#tool-calling), AI messages can contain tool calls. Tool messages are used to pass the results of a single tool execution back to the model.
 
-[Tools](/oss/javascript/langchain/tools) can generate @[`ToolMessage`] objects directly. Below, we show a simple example. Read more in the [tools guide](/oss/javascript/langchain/tools).
+[Tools](/oss/javascript/langchain/tools) can generate [`ToolMessage`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.ToolMessage.html) objects directly. Below, we show a simple example. Read more in the [tools guide](/oss/javascript/langchain/tools).
 
 
 
@@ -992,7 +992,7 @@ Content blocks are represented (either when creating a message or accessing the 
     </Accordion>
 </AccordionGroup>
 
-Each of these content blocks mentioned above are indvidually addressable as types when importing the @[`ContentBlock`] type.
+Each of these content blocks mentioned above are indvidually addressable as types when importing the [`ContentBlock`](https://reference.langchain.com/javascript/types/_langchain_core.messages.MessageContent.html) type.
 
 ```typescript
 import { ContentBlock } from "langchain";
@@ -1013,13 +1013,13 @@ const imageBlock: ContentBlock.Multimodal.Image = {
 
 
 <Tip>
-    View the canonical type definitions in the @[API reference][langchain.messages].
+    View the canonical type definitions in the [API reference](https://reference.langchain.com/javascript/modules/_langchain_core.messages.html).
 </Tip>
 
 <Info>
     Content blocks were introduced as a new property on messages in LangChain v1 to standardize content formats across providers while maintaining backward compatibility with existing code.
 
-    Content blocks are not a replacement for the @[`content`][BaseMessage(content)] property, but rather a new property that can be used to access the content of a message in a standardized format.
+    Content blocks are not a replacement for the [`content`](https://reference.langchain.com/javascript/classes/_langchain_core.messages.BaseMessage.html#content) property, but rather a new property that can be used to access the content of a message in a standardized format.
 </Info>
 
 ## Use with chat models

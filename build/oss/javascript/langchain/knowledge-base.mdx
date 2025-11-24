@@ -225,7 +225,7 @@ Armed with a model for generating text embeddings, we can next store them in a s
 
 ## 3. Vector stores
 
-LangChain @[VectorStore] objects contain methods for adding text and [`Document`](https://reference.langchain.com/javascript/classes/_langchain_core.documents.Document.html) objects to the store, and querying them using various similarity metrics. They are often initialized with [embedding](/oss/javascript/langchain/retrieval#embedding_models) models, which determine how text data is translated to numeric vectors.
+LangChain [VectorStore](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html) objects contain methods for adding text and [`Document`](https://reference.langchain.com/javascript/classes/_langchain_core.documents.Document.html) objects to the store, and querying them using various similarity metrics. They are often initialized with [embedding](/oss/javascript/langchain/retrieval#embedding_models) models, which determine how text data is translated to numeric vectors.
 
 LangChain includes a suite of [integrations](/oss/javascript/integrations/vectorstores) with different vector store technologies. Some vector stores are hosted by a provider (e.g., various cloud providers) and require specific credentials to use; some (such as [Postgres](/oss/javascript/integrations/vectorstores/pgvector)) run in separate infrastructure that can be run locally or via a third-party; others can run in-memory for lightweight workloads. Let's select a vector store:
 
@@ -243,11 +243,15 @@ await vectorStore.addDocuments(allSplits);
 
 Note that most vector store implementations will allow you to connect to an existing vector store--  e.g., by providing a client, index name, or other information. See the documentation for a specific [integration](/oss/javascript/integrations/vectorstores) for more detail.
 
-Once we've instantiated a @[`VectorStore`] that contains documents, we can query it. @[VectorStore] includes methods for querying:
+
+
+Once we've instantiated a [`VectorStore`](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html) that contains documents, we can query it. [VectorStore](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html) includes methods for querying:
 - Synchronously and asynchronously;
 - By string query and by vector;
 - With and without returning similarity scores;
-- By similarity and @[maximum marginal relevance][VectorStore.max_marginal_relevance_search] (to balance similarity with query to diversity in retrieved results).
+- By similarity and [maximum marginal relevance](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html#maxMarginalRelevanceSearch) (to balance similarity with query to diversity in retrieved results).
+
+
 
 The methods will generally include a list of [Document](https://reference.langchain.com/javascript/classes/_langchain_core.documents.Document.html) objects in their outputs.
 
@@ -324,12 +328,12 @@ Document {
 
 Learn more:
 
-- @[API Reference][VectorStore]
+- [API Reference](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html)
 - [Integration-specific docs](/oss/javascript/integrations/vectorstores)
 
 ## 4. Retrievers
 
-LangChain @[`VectorStore`] objects do not subclass @[Runnable]. LangChain @[Retrievers] are Runnables, so they implement a standard set of methods (e.g., synchronous and asynchronous `invoke` and `batch` operations). Although we can construct retrievers from vector stores, retrievers can interface with non-vector store sources of data, as well (such as external APIs).
+LangChain [`VectorStore`](https://reference.langchain.com/javascript/classes/_langchain_core.vectorstores.VectorStore.html) objects do not subclass [Runnable](https://reference.langchain.com/javascript/classes/_langchain_core.runnables.Runnable.html). LangChain [Retrievers](https://reference.langchain.com/javascript/interfaces/_langchain_core.retrievers.BaseRetriever.html) are Runnables, so they implement a standard set of methods (e.g., synchronous and asynchronous `invoke` and `batch` operations). Although we can construct retrievers from vector stores, retrievers can interface with non-vector store sources of data, as well (such as external APIs).
 
 
 
