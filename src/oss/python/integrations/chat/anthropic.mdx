@@ -166,6 +166,56 @@ ai_msg.tool_calls
   'id': 'toolu_012kz4qHZQqD4qg8sFPeKqpP'}]
 ```
 
+## Tools
+
+The `extras` parameter on LangChain tools supports Anthropic-specific fields that enhance tool functionality.
+
+### Input examples
+
+For complex tools, you can provide usage examples to help Claude understand how to use them correctly:
+
+```python
+from langchain_anthropic import ChatAnthropic
+from langchain.tools import tool
+
+@tool(
+    extras={
+        "input_examples": [
+            {
+                "query": "weather report",
+                "location": "San Francisco",
+                "format": "detailed"
+            },
+            {
+                "query": "temperature",
+                "location": "New York",
+                "format": "brief"
+            }
+        ]
+    }
+)
+def search_weather_data(query: str, location: str, format: str = "brief") -> str:
+    """Search weather database with specific query and format preferences.
+
+    Args:
+        query: The type of weather information to retrieve
+        location: City or region to search
+        format: Output format, either 'brief' or 'detailed'
+    """
+    return f"{format.title()} {query} for {location}: Data found"
+
+model = ChatAnthropic(model="claude-sonnet-4-5-20250929")
+model_with_tools = model.bind_tools([search_weather_data])
+
+response = model_with_tools.invoke(
+    "Get me a detailed weather report for Seattle"
+)
+```
+
+The `extras` parameter also supports:
+- `defer_loading` (bool): Load tool on-demand for [tool search](#tool-search)
+- `cache_control` (dict): Enable [prompt caching](#caching-tools) for the tool
+
 ## Multimodal
 
 Claude supports image and PDF inputs as content blocks, both in Anthropic's native format (see docs for [vision](https://platform.claude.com/docs/en/build-with-claude/vision#base64-encoded-image-example) and [PDF support](https://platform.claude.com/docs/en/build-with-claude/pdf-support) as well as LangChain's [standard format](/oss/langchain/messages#multimodal).
@@ -397,10 +447,10 @@ Second:
 
 </Tip>
 
-### Tools
+### Caching tools
 
 ```python expandable
-from langchain_anthropic import convert_to_anthropic_tool
+from langchain_anthropic import ChatAnthropic
 from langchain.tools import tool
 
 
@@ -412,17 +462,13 @@ description = (
 )
 
 
-@tool(description=description)
+@tool(description=description, extras={"cache_control": {"type": "ephemeral"}})  # [!code highlight]
 def get_weather(location: str) -> str:
     return "It's sunny."
 
 
-# Enable caching on the tool
-weather_tool = convert_to_anthropic_tool(get_weather)  # [!code highlight]
-weather_tool["cache_control"] = {"type": "ephemeral"}  # [!code highlight]
-
 model = ChatAnthropic(model="claude-sonnet-4-5-20250929")
-model_with_tools = model.bind_tools([weather_tool])
+model_with_tools = model.bind_tools([get_weather])
 query = "What's the weather in San Francisco?"
 
 response_1 = model_with_tools.invoke(query)
@@ -1193,50 +1239,39 @@ There are two tool search variants:
 - **Regex** (`tool_search_tool_regex_20251119`): Claude constructs regex patterns to search for tools
 - **BM25** (`tool_search_tool_bm25_20251119`): Claude uses natural language queries to search for tools
 
+Use the `extras` parameter to specify `defer_loading` on LangChain tools:
+
 ```python
 from langchain_anthropic import ChatAnthropic
+from langchain_core.tools import tool
 
-model = ChatAnthropic(
-    model="claude-sonnet-4-5-20250929",
-)
+@tool(extras={"defer_loading": True})  # [!code highlight]
+def get_weather(location: str, unit: str = "fahrenheit") -> str:
+    """Get the current weather for a location.
 
-# Define tools with defer_loading for on-demand loading
-tools = [
-    {
-        "type": "tool_search_tool_regex_20251119",
-        "name": "tool_search_tool_regex",
-    },
-    {
-        "name": "get_weather",
-        "description": "Get the current weather for a location",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "location": {"type": "string", "description": "City name"},
-                "unit": {
-                    "type": "string",
-                    "enum": ["celsius", "fahrenheit"],
-                },
-            },
-            "required": ["location"],
-        },
-        "defer_loading": True,  # Tool is loaded on-demand  # [!code highlight]
-    },
-    {
-        "name": "search_files",
-        "description": "Search through files in the workspace",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string"},
-            },
-            "required": ["query"],
-        },
-        "defer_loading": True, # [!code highlight]
-    },
-]
+    Args:
+        location: City name
+        unit: Temperature unit (celsius or fahrenheit)
+    """
+    return f"Weather in {location}: Sunny"
 
-model_with_tools = model.bind_tools(tools)
+@tool(extras={"defer_loading": True})  # [!code highlight]
+def search_files(query: str) -> str:
+    """Search through files in the workspace.
+
+    Args:
+        query: Search query
+    """
+    return f"Found files matching '{query}'"
+
+model = ChatAnthropic(model="claude-sonnet-4-5-20250929")
+
+model_with_tools = model.bind_tools([
+    {"type": "tool_search_tool_regex_20251119", "name": "tool_search_tool_regex"},
+    get_weather,
+    search_files,
+])
+
 response = model_with_tools.invoke("What's the weather in San Francisco?")
 ```
 
