@@ -127,11 +127,71 @@ const rt = new RunTree({
   inputs: { messages },
   project_name: "My Project"
 });
+
 await rt.postRun();
 
 // Execute a chat completion and handle it within RunTree
+const chatCompletion = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: messages,
+});
 rt.end({outputs: chatCompletion});
 await rt.patchRun();
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.core.JsonValue;
+import com.langchain.smith.models.runs.RunCreate;
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+
+public class ProjectTracing {
+    public static void main(String[] args) {
+        // Method 1: Set project via environment variable (recommended)
+        // export LANGSMITH_PROJECT=my-custom-project
+
+        // Method 2: Set project dynamically via OpenTelemetryConfig
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .projectName("My Project")  // Override the env var
+            .build();
+
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Make calls - they'll be logged to "My Project"
+        ChatCompletion completion = client.chat().completions().create(
+            ChatCompletionCreateParams.builder()
+                .model(ChatModel.GPT_4O_MINI)
+                .addSystemMessage("You are a helpful assistant.")
+                .addUserMessage("Hello!")
+                .build()
+        );
+
+        // Method 3: Use REST API with sessionName parameter
+        LangsmithClient lsClient = LangsmithOkHttpClient.fromEnv();
+
+        UUID runId = UUID.randomUUID();
+        lsClient.runs().create(RunCreate.builder()
+            .id(runId)
+            .name("OpenAI Call")
+            .runType(RunCreate.RunType.LLM)
+            .inputs(JsonValue.from(Map.of("messages", "Hello!")))
+            .startTime(Instant.now())
+            .sessionName("My Project")  // Specify project here
+            .build());
+
+        System.out.println("Traces logged to project: My Project");
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
 ```
 
 </CodeGroup>

@@ -44,9 +44,11 @@ You can tag a version of your dataset in the UI by clicking on **+ Tag this vers
 
 ![Tagging Datasets](/langsmith/images/tag-this-version.png)
 
-You can also tag versions of your dataset using the SDK. Here's an example of how to tag a version of a dataset using the [Python SDK](https://docs.smith.langchain.com/reference/python/reference):
+You can also tag versions of your dataset using the SDK. Here's an example of how to tag a version of a dataset using the SDK:
 
-```python
+<CodeGroup>
+
+```python Python
 from langsmith import Client
 from datetime import datetime
 
@@ -59,6 +61,34 @@ client.update_dataset_tag(
 )
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.datasets.Dataset;
+import com.langchain.smith.models.datasets.DatasetListParams;
+import java.time.Instant;
+
+public class DatasetVersioning {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // List datasets to find your dataset
+        var datasets = client.datasets().list(DatasetListParams.builder()
+            .datasetName("Toxic Queries")
+            .build());
+
+        Dataset dataset = datasets.datasets().get(0);
+        System.out.println("Dataset ID: " + dataset.id());
+        System.out.println("Dataset name: " + dataset.name());
+
+        // Note: Dataset versioning and tagging are primarily managed through the UI
+        // The Java SDK provides access to dataset metadata and examples
+    }
+}
+```
+
+</CodeGroup>
+
 To run an evaluation on a particular tagged version of a dataset, refer to the [Evaluate on a specific dataset version section](#evaluate-on-specific-dataset-version).
 
 ## Evaluate on a specific dataset version
@@ -69,6 +99,10 @@ You may find it helpful to refer to the following content before you read this s
 - [Version a dataset](#version-a-dataset).
 - [Fetching examples](/langsmith/manage-datasets-programmatically#fetch-examples).
 </Check>
+
+<Note>
+**Java SDK**: The Java examples in this section demonstrate how to fetch dataset examples using the same filtering capabilities as Python and TypeScript. However, the Java SDK does not include the high-level `evaluate()` function. Instead, you can fetch examples with `client.examples().list()` and implement your own evaluation logic.
+</Note>
 
 ### Use `list_examples`
 
@@ -107,6 +141,33 @@ await evaluate((inputs) => labelText(inputs["input"]), {
   }),
   evaluators: [correctLabel],
 });
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.examples.Example;
+import com.langchain.smith.models.examples.ExamplesListParams;
+
+public class EvaluateOnVersion {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Fetch examples from a specific version
+        Iterable<Example> examples = client.examples().list(
+            ExamplesListParams.builder()
+                .datasetName("Toxic Queries")
+                .asOf("latest")  // specify version here
+                .build()
+        );
+
+        // Process examples for evaluation
+        for (Example example : examples) {
+            // Your evaluation logic here
+            System.out.println("Example: " + example.inputs());
+        }
+    }
+}
 ```
 
 </CodeGroup>
@@ -154,6 +215,38 @@ await evaluate((inputs) => labelText(inputs["input"]), {
 });
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.examples.Example;
+import com.langchain.smith.models.examples.ExamplesListParams;
+import java.util.HashMap;
+import java.util.Map;
+
+public class EvaluateFiltered {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Fetch examples with specific metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("desired_key", "desired_value");
+
+        Iterable<Example> examples = client.examples().list(
+            ExamplesListParams.builder()
+                .datasetName("Toxic Queries")
+                .metadata(metadata)
+                .build()
+        );
+
+        // Process filtered examples for evaluation
+        for (Example example : examples) {
+            // Your evaluation logic here
+            System.out.println("Example: " + example.inputs());
+        }
+    }
+}
+```
+
 </CodeGroup>
 
 For more filtering capabilities, refer to this [how-to guide](/langsmith/manage-datasets-programmatically#list-examples-by-structured-filter).
@@ -186,6 +279,34 @@ await evaluate((inputs) => labelText(inputs["input"]), {
   evaluators: [correctLabel],
   experimentPrefix: "Toxic Queries",
 });
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.examples.Example;
+import com.langchain.smith.models.examples.ExamplesListParams;
+import java.util.Arrays;
+
+public class EvaluateOnSplit {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Fetch examples from specific splits
+        Iterable<Example> examples = client.examples().list(
+            ExamplesListParams.builder()
+                .datasetName("Toxic Queries")
+                .splits(Arrays.asList("test", "training"))
+                .build()
+        );
+
+        // Process examples from splits for evaluation
+        for (Example example : examples) {
+            // Your evaluation logic here
+            System.out.println("Example: " + example.inputs());
+        }
+    }
+}
 ```
 
 </CodeGroup>

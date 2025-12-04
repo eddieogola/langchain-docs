@@ -116,4 +116,61 @@ import { wrapOpenAI } from "langsmith/wrappers";
 await traceableCallOpenAI(messages);
 ```
 
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class MetadataTagsExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        // Get tracer
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Create a span with metadata and tags
+        Span span = tracer.spanBuilder("openai_call")
+            .setAttribute("langsmith.span.kind", "llm")
+            // Add metadata as span attributes
+            .setAttribute("my-key", "my-value")
+            .setAttribute("environment", "production")
+            // Add tags as a comma-separated string
+            .setAttribute("langsmith.tags", "my-tag,another-tag")
+            .startSpan();
+
+        try (Scope scope = span.makeCurrent()) {
+            ChatCompletion completion = client.chat().completions().create(
+                ChatCompletionCreateParams.builder()
+                    .model(ChatModel.GPT_4O_MINI)
+                    .addSystemMessage("You are a helpful assistant.")
+                    .addUserMessage("Hello!")
+                    .build()
+            );
+
+            // Add dynamic metadata during execution
+            span.setAttribute("response-length",
+                completion.choices().get(0).message().content().orElse("").length());
+            span.setAttribute("user-id", "user-123");
+
+            System.out.println(completion.choices().get(0).message().content().orElse(""));
+        } finally {
+            span.end();
+        }
+
+        client.close();
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
+```
+
 </CodeGroup>

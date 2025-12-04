@@ -3,7 +3,7 @@ title: Manage prompts programmatically
 sidebarTitle: Manage prompts programmatically
 ---
 
-You can use the LangSmith Python and TypeScript SDK to manage prompts programmatically.
+You can use the LangSmith Python, TypeScript, and Java SDKs to manage prompts programmatically.
 
 <Note>
 Previously this functionality lived in the `langchainhub` package which is now deprecated. All functionality going forward will live in the `langsmith` package.
@@ -14,6 +14,8 @@ Previously this functionality lived in the `langchainhub` package which is now d
 In Python, you can directly use the LangSmith SDK (*recommended, full functionality*) or you can use through the LangChain package (limited to pushing and pulling prompts).
 
 In TypeScript, you must use the LangChain npm package for pulling prompts (it also allows pushing). For all other functionality, use the LangSmith package.
+
+In Java, use the LangSmith SDK to manage prompts through the repos and commits API.
 
 <CodeGroup>
 ```bash pip
@@ -26,6 +28,18 @@ uv add langsmith  # version >= 0.1.99
 
 ```bash TypeScript
 yarn add langsmith langchain // langsmith version >= 0.1.99 and langchain version >= 0.2.14
+```
+
+```xml Maven
+<dependency>
+  <groupId>com.langchain.smith</groupId>
+  <artifactId>langsmith-java</artifactId>
+  <version>0.1.0-alpha.17</version>
+</dependency>
+```
+
+```kotlin Gradle
+implementation("com.langchain.smith:langsmith-java:0.1.0-alpha.17")
 ```
 </CodeGroup>
 
@@ -82,6 +96,45 @@ const url = hub.push("joke-generator", {
 });
 // url is a link to the prompt in the UI
 console.log(url);
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.core.JsonValue;
+import com.langchain.smith.models.commits.CommitUpdateParams;
+import com.langchain.smith.models.repos.Repo;
+import com.langchain.smith.models.repos.RepoCreate;
+import java.util.Map;
+
+public class PromptManagement {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Create a prompt repository
+        Repo repo = client.repos().create(RepoCreate.builder()
+            .repoHandle("joke-generator")
+            .description("A prompt for generating jokes")
+            .isPublic(false)
+            .build());
+
+        // Define prompt content
+        Map<String, Object> promptManifest = Map.of(
+            "template", "tell me a joke about {topic}",
+            "input_variables", new String[]{"topic"}
+        );
+
+        // Push prompt content as a commit
+        client.commits().update(
+            repo.repoHandle(),
+            CommitUpdateParams.builder()
+                .manifest(JsonValue.from(promptManifest))
+                .build()
+        );
+
+        System.out.println("Prompt created: https://smith.langchain.com/prompts/" + repo.repoHandle());
+    }
+}
 ```
 
 </CodeGroup>
@@ -171,6 +224,27 @@ const chain = prompt.pipe(model);
 await chain.invoke({"topic": "cats"});
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.commits.Commit;
+
+public class PullPrompt {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Pull the latest commit for the prompt
+        Commit commit = client.commits().get("joke-generator", "latest");
+
+        // Access the prompt manifest
+        System.out.println("Prompt manifest: " + commit.manifest());
+
+        // Use the prompt content with your model
+        // Extract template and use it with your preferred model provider
+    }
+}
+```
+
 </CodeGroup>
 
 Similar to pushing a prompt, you can also pull a prompt as a RunnableSequence of a prompt and a model. Just specify include\_model when pulling the prompt. If the stored prompt includes a model, it will be returned as a RunnableSequence. Make sure you have the proper environment variables set for the model you are using.
@@ -200,6 +274,26 @@ const chain = await hub.pull<Runnable>("joke-generator-with-model", { includeMod
 await chain.invoke({"topic": "cats"});
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.commits.Commit;
+
+public class PullPromptWithModel {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // Pull the latest commit for the prompt with model
+        Commit commit = client.commits().get("joke-generator-with-model", "latest");
+
+        // Access the prompt manifest which includes model configuration
+        System.out.println("Prompt with model manifest: " + commit.manifest());
+
+        // Extract model configuration and use with your preferred model provider
+    }
+}
+```
+
 </CodeGroup>
 
 When pulling a prompt, you can also specify a specific commit hash or [commit tag](/langsmith/manage-prompts#commit-tags) to pull a specific version of the prompt.
@@ -218,6 +312,11 @@ prompt = prompts.pull("joke-generator:12344e88")
 const prompt = await hub.pull("joke-generator:12344e88")
 ```
 
+```java Java
+// Pull a specific commit by hash
+Commit commit = client.commits().get("joke-generator", "12344e88");
+```
+
 </CodeGroup>
 
 To pull a public prompt from the LangChain Hub, you need to specify the handle of the prompt's author.
@@ -234,6 +333,11 @@ prompt = prompts.pull("efriis/my-first-prompt")
 
 ```typescript TypeScript
 const prompt = await hub.pull("efriis/my-first-prompt")
+```
+
+```java Java
+// Pull a public prompt by specifying the owner handle
+Commit commit = client.commits().get("efriis/my-first-prompt", "latest");
 ```
 
 </CodeGroup>
@@ -402,6 +506,42 @@ client.likePrompt("efriis/my-first-prompt");
 
 // Unlike a prompt
 client.unlikePrompt("efriis/my-first-prompt");
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.repos.Repo;
+import com.langchain.smith.models.repos.ReposListParams;
+
+public class ManagePrompts {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // List all prompts in my workspace
+        Iterable<Repo> prompts = client.repos().list();
+        for (Repo prompt : prompts) {
+            System.out.println(prompt.repoHandle());
+        }
+
+        // List private prompts that include "joke"
+        Iterable<Repo> jokePrompts = client.repos().list(
+            ReposListParams.builder()
+                .query("joke")
+                .isPublic(false)
+                .build()
+        );
+
+        // Delete a prompt
+        client.repos().delete("joke-generator");
+
+        // Like a prompt
+        client.repos().like("efriis/my-first-prompt");
+
+        // Unlike a prompt
+        client.repos().unlike("efriis/my-first-prompt");
+    }
+}
 ```
 
 </CodeGroup>

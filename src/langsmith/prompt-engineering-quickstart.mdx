@@ -144,6 +144,39 @@ To improve your prompts:
     npx tsc --init
     ```
 
+    ```bash Maven
+    # Create a new Maven project
+    mkdir ls-prompt-quickstart-java && cd ls-prompt-quickstart-java
+    mvn archetype:generate -DgroupId=com.example -DartifactId=prompt-quickstart \
+      -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+    cd prompt-quickstart
+
+    # Then add these dependencies to your pom.xml <dependencies> section:
+
+     <dependency>
+       <groupId>com.langchain.smith</groupId>
+       <artifactId>langsmith-java</artifactId>
+       <version>0.1.0-alpha.17</version>
+     </dependency>
+     <dependency>
+       <groupId>com.openai</groupId>
+       <artifactId>openai-java</artifactId>
+       <version>0.8.2</version>
+     </dependency>
+    ```
+
+    ```bash Gradle
+    # Create a new Gradle project
+    mkdir ls-prompt-quickstart-java && cd ls-prompt-quickstart-java
+    gradle init --type java-application --dsl kotlin
+    cd app
+
+    # Then add these dependencies to your build.gradle.kts dependencies block:
+
+    implementation("com.langchain.smith:langsmith-java:0.1.0-alpha.17")
+    implementation("com.openai:openai-java:0.8.2")
+    ```
+
     </CodeGroup>
 
 1. Set your API keys:
@@ -194,6 +227,49 @@ Use the language-specific constructor and push method:
     await client.pushPrompt("prompt-quickstart", {
     object: prompt,
     });
+    ```
+
+    ```java Java
+    import com.langchain.smith.client.LangsmithClient;
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+    import com.langchain.smith.core.JsonValue;
+    import com.langchain.smith.models.repos.Repo;
+    import com.langchain.smith.models.repos.RepoCreate;
+    import com.langchain.smith.models.commits.CommitUpdateParams;
+    import java.util.Map;
+    import java.util.List;
+
+    public class CreatePrompt {
+        public static void main(String[] args) {
+            LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+            // Create a prompt repository
+            Repo repo = client.repos().create(RepoCreate.builder()
+                .repoHandle("prompt-quickstart")
+                .description("A quickstart prompt")
+                .isPublic(false)
+                .build());
+
+            // Define the prompt manifest
+            Map<String, Object> promptManifest = Map.of(
+                "messages", List.of(
+                    Map.of("role", "system", "content", "You are a helpful chatbot."),
+                    Map.of("role", "user", "content", "{question}")
+                ),
+                "input_variables", List.of("question")
+            );
+
+            // Push the prompt
+            client.commits().update(
+                repo.repoHandle(),
+                CommitUpdateParams.builder()
+                    .manifest(JsonValue.from(promptManifest))
+                    .build()
+            );
+
+            System.out.println("Prompt created: " + repo.url());
+        }
+    }
     ```
 
     </CodeGroup>
@@ -263,6 +339,55 @@ Then, you'll iterate on the prompt by creating a new version. Members of your wo
         messages: convertPromptToOpenAI(formattedPrompt).messages,
     });
     ```
+
+    ```java Java
+    import com.langchain.smith.client.LangsmithClient;
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+    import com.langchain.smith.models.commits.Commit;
+    import com.openai.client.OpenAIClient;
+    import com.openai.client.okhttp.OpenAIOkHttpClient;
+    import com.openai.models.ChatModel;
+    import com.openai.models.chat.completions.ChatCompletion;
+    import com.openai.models.chat.completions.ChatCompletionCreateParams;
+    import java.util.List;
+    import java.util.Map;
+
+    public class TestPrompt {
+        public static void main(String[] args) {
+            LangsmithClient lsClient = LangsmithOkHttpClient.fromEnv();
+            OpenAIClient oaiClient = OpenAIOkHttpClient.fromEnv();
+
+            // Pull the prompt by name
+            Commit commit = lsClient.commits().get("prompt-quickstart", "latest");
+            Map<String, Object> manifest = commit.manifest();
+
+            // Extract the prompt template
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> messages =
+                (List<Map<String, String>>) manifest.get("messages");
+
+            // Format the prompt with the question
+            String question = "What is the color of the sky?";
+            ChatCompletionCreateParams.Builder paramsBuilder =
+                ChatCompletionCreateParams.builder().model(ChatModel.GPT_4O);
+
+            for (Map<String, String> message : messages) {
+                String role = message.get("role");
+                String content = message.get("content").replace("{question}", question);
+
+                if ("system".equals(role)) {
+                    paramsBuilder.addSystemMessage(content);
+                } else if ("user".equals(role)) {
+                    paramsBuilder.addUserMessage(content);
+                }
+            }
+
+            // Call OpenAI with the formatted prompt
+            ChatCompletion response = oaiClient.chat().completions().create(paramsBuilder.build());
+            System.out.println(response.choices().get(0).message().content().orElse(""));
+        }
+    }
+    ```
     </CodeGroup>
 
     This loads the prompt by name using `pull` for the latest committed version of the prompt that you're testing. You can also specify a specific commit by passing the commit hash `"<prompt-name>:<commit-hash>"`
@@ -315,6 +440,42 @@ Then, you'll iterate on the prompt by creating a new version. Members of your wo
     await client.pushPrompt("prompt-quickstart", {
         object: newPrompt
     });
+    ```
+
+    ```java Java
+    import com.langchain.smith.client.LangsmithClient;
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+    import com.langchain.smith.core.JsonValue;
+    import com.langchain.smith.models.repos.Repo;
+    import com.langchain.smith.models.repos.RepoCreate;
+    import com.langchain.smith.models.commits.CommitUpdateParams;
+    import java.util.Map;
+    import java.util.List;
+
+    public class IteratePrompt {
+        public static void main(String[] args) {
+            LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+            // Update the prompt with new instructions
+            Map<String, Object> updatedManifest = Map.of(
+                "messages", List.of(
+                    Map.of("role", "system", "content", "You are a helpful chatbot. Speak in Spanish."),
+                    Map.of("role", "user", "content", "{question}")
+                ),
+                "input_variables", List.of("question")
+            );
+
+            // Push the updated prompt (creates a new commit)
+            client.commits().update(
+                "prompt-quickstart",
+                CommitUpdateParams.builder()
+                    .manifest(JsonValue.from(updatedManifest))
+                    .build()
+            );
+
+            System.out.println("Prompt updated successfully!");
+        }
+    }
     ```
 
     </CodeGroup>

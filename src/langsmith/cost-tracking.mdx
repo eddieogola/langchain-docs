@@ -209,6 +209,64 @@ const chatModel = traceable(
 await chatModel({ messages: inputs });
 ```
 
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class UsageMetadataExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Create a span for the LLM call
+        Span llmSpan = tracer.spanBuilder("chat_model")
+            .setAttribute("langsmith.span.kind", "llm")
+            .setAttribute("ls_provider", "my_provider")
+            .setAttribute("ls_model_name", "my_model")
+            .startSpan();
+
+        try (Scope scope = llmSpan.makeCurrent()) {
+            // Make the LLM call
+            ChatCompletion completion = client.chat().completions().create(
+                ChatCompletionCreateParams.builder()
+                    .model(ChatModel.GPT_4O_MINI)
+                    .addSystemMessage("You are a helpful assistant.")
+                    .addUserMessage("I'd like to book a table for two.")
+                    .build()
+            );
+
+            // Attach token usage to the span as attributes
+            llmSpan.setAttribute("gen_ai.usage.input_tokens", 27);
+            llmSpan.setAttribute("gen_ai.usage.output_tokens", 13);
+            llmSpan.setAttribute("gen_ai.usage.total_tokens", 40);
+
+            // Add detailed token breakdown
+            llmSpan.setAttribute("gen_ai.usage.input_token_details.cache_read", 10);
+
+            System.out.println("Response: " +
+                completion.choices().get(0).message().content().orElse(""));
+        } finally {
+            llmSpan.end();
+        }
+
+        client.close();
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
+```
+
 </CodeGroup>
 </Accordion >
 
@@ -294,6 +352,65 @@ const chatModel = traceable(
 );
 
 await chatModel({ messages });
+```
+
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class UsageMetadataOutputExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Create a span for the LLM call
+        Span llmSpan = tracer.spanBuilder("chat_model")
+            .setAttribute("langsmith.span.kind", "llm")
+            .setAttribute("ls_provider", "my_provider")
+            .setAttribute("ls_model_name", "my_model")
+            .startSpan();
+
+        try (Scope scope = llmSpan.makeCurrent()) {
+            // Make the LLM call
+            ChatCompletion completion = client.chat().completions().create(
+                ChatCompletionCreateParams.builder()
+                    .model(ChatModel.GPT_4O_MINI)
+                    .addSystemMessage("You are a helpful assistant.")
+                    .addUserMessage("I'd like to book a table for two.")
+                    .build()
+            );
+
+            // Extract usage information from the completion
+            completion.usage().ifPresent(usage -> {
+                // Set token usage as span attributes
+                llmSpan.setAttribute("gen_ai.usage.input_tokens", usage.promptTokens());
+                llmSpan.setAttribute("gen_ai.usage.output_tokens", usage.completionTokens());
+                llmSpan.setAttribute("gen_ai.usage.total_tokens", usage.totalTokens());
+            });
+
+            // Return the message content
+            System.out.println("Response: " +
+                completion.choices().get(0).message().content().orElse(""));
+        } finally {
+            llmSpan.end();
+        }
+
+        client.close();
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
 ```
 </CodeGroup>
 
@@ -533,6 +650,61 @@ const chatModel = traceable(
 await chatModel(messages);
 ```
 
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class DirectCostExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Create a span for the LLM call
+        Span llmSpan = tracer.spanBuilder("chat_model")
+            .setAttribute("langsmith.span.kind", "llm")
+            .setAttribute("ls_provider", "my_provider")
+            .setAttribute("ls_model_name", "my_model")
+            .startSpan();
+
+        try (Scope scope = llmSpan.makeCurrent()) {
+            // Make the LLM call
+            ChatCompletion completion = client.chat().completions().create(
+                ChatCompletionCreateParams.builder()
+                    .model(ChatModel.GPT_4O_MINI)
+                    .addSystemMessage("You are a helpful assistant.")
+                    .addUserMessage("I'd like to book a table for two.")
+                    .build()
+            );
+
+            // Specify cost directly (in dollars) for non-linear pricing models
+            llmSpan.setAttribute("gen_ai.usage.input_cost", 1.1e-6);
+            llmSpan.setAttribute("gen_ai.usage.input_cost_details.cache_read", 2.3e-7);
+            llmSpan.setAttribute("gen_ai.usage.output_cost", 5.0e-6);
+
+            System.out.println("Response: " +
+                completion.choices().get(0).message().content().orElse(""));
+        } finally {
+            llmSpan.end();
+        }
+
+        client.close();
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
+```
+
 </CodeGroup>
 
 
@@ -606,6 +778,51 @@ const getWeather = traceable(
 const toolResponse = await getWeather({ city: "San Francisco" });
 ```
 
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class ToolCostExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+
+        // Create a span for the tool call
+        Span toolSpan = tracer.spanBuilder("get_weather")
+            .setAttribute("langsmith.span.kind", "tool")
+            .startSpan();
+
+        try (Scope scope = toolSpan.makeCurrent()) {
+            // Your tool logic here
+            String city = "San Francisco";
+            String weatherData = String.format(
+                "{\"temperature_f\": 68, \"condition\": \"sunny\", \"city\": \"%s\"}",
+                city
+            );
+
+            // Cost for this tool call (computed however you like)
+            double toolCost = 0.0015;
+
+            // Attach usage metadata to the LangSmith span
+            toolSpan.setAttribute("gen_ai.usage.total_cost", toolCost);
+
+            System.out.println("Weather data: " + weatherData);
+        } finally {
+            toolSpan.end();
+        }
+
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
+```
+
 </CodeGroup>
 </Accordion >
 
@@ -666,6 +883,68 @@ const getWeather = traceable(
 );
 
 const toolResponse = await getWeather({ city: "San Francisco" });
+```
+
+```java Java
+import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
+public class CostTrackingExample {
+    public static void main(String[] args) {
+        // Configure OpenTelemetry
+        OpenTelemetryConfig.builder()
+            .fromEnv()
+            .build();
+
+        Tracer tracer = GlobalOpenTelemetry.get().getTracer("my-app");
+        WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        // Method 1: Automatic cost tracking from token usage
+        // The WrappedOpenAIClient automatically tracks token usage
+        ChatCompletion completion = client.chat().completions().create(
+            ChatCompletionCreateParams.builder()
+                .model(ChatModel.GPT_4O_MINI)
+                .addSystemMessage("You are a helpful assistant.")
+                .addUserMessage("Hello!")
+                .build()
+        );
+
+        // Access token usage information
+        completion.usage().ifPresent(usage -> {
+            System.out.println("Input tokens: " + usage.promptTokens());
+            System.out.println("Output tokens: " + usage.completionTokens());
+            System.out.println("Total tokens: " + usage.totalTokens());
+            // LangSmith will automatically calculate costs based on model pricing
+        });
+
+        // Method 2: Manual cost tracking for custom operations (e.g., tool calls)
+        Span toolSpan = tracer.spanBuilder("get_weather")
+            .setAttribute("langsmith.span.kind", "tool")
+            .startSpan();
+
+        try (Scope scope = toolSpan.makeCurrent()) {
+            // Your tool logic here
+            String weatherData = "{\"temperature\": 68, \"condition\": \"sunny\"}";
+
+            // Manually track cost for this tool call
+            toolSpan.setAttribute("gen_ai.usage.total_cost", 0.0015);
+
+            System.out.println("Weather data: " + weatherData);
+        } finally {
+            toolSpan.end();
+        }
+
+        client.close();
+        OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+}
 ```
 </CodeGroup>
 </Accordion>

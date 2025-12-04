@@ -52,6 +52,46 @@ npm install langsmith openai typescript ts-node
 npx tsc --init
 ```
 
+```bash Maven
+# Create a new Maven project
+mkdir ls-observability-quickstart-java && cd ls-observability-quickstart-java
+mvn archetype:generate -DgroupId=com.example -DartifactId=langsmith-quickstart \
+  -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+cd langsmith-quickstart
+
+# Then add these dependencies to your pom.xml <dependencies> section:
+
+ <dependency>
+  <groupId>com.langchain.smith</groupId>
+   <artifactId>langsmith-java</artifactId>
+   <version>0.1.0-alpha.17</version>
+ </dependency>
+ <dependency>
+   <groupId>com.openai</groupId>
+   <artifactId>openai-java</artifactId>
+   <version>0.20.2</version>
+ </dependency>
+ <dependency>
+   <groupId>io.opentelemetry</groupId>
+   <artifactId>opentelemetry-sdk</artifactId>
+   <version>1.34.1</version>
+ </dependency>
+```
+
+```bash Gradle
+# Create a new Gradle project
+mkdir ls-observability-quickstart-java && cd ls-observability-quickstart-java
+gradle init --type java-application --dsl kotlin
+
+# Then add these dependencies to your build.gradle.kts:
+
+dependencies {
+    implementation("com.langchain.smith:langsmith-java:0.1.0-alpha.17")
+    implementation("com.openai:openai-java:0.20.2")
+    implementation("io.opentelemetry:opentelemetry-sdk:1.34.1")
+}
+```
+
 </CodeGroup>
 
 ## 2. Set up environment variables
@@ -152,14 +192,57 @@ async function rag(question: string) {
 })();
 ```
 
+```java Java
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import java.util.Arrays;
+import java.util.List;
+
+public class RagApp {
+
+    // Minimal example retriever
+    public static List<String> retriever(String query) {
+        return Arrays.asList("Harrison worked at Kensho");
+    }
+
+    // OpenAI client call (no wrapping yet)
+    static OpenAIClient client = OpenAIOkHttpClient.fromEnv();
+
+    public static String rag(String question) {
+        List<String> docs = retriever(question);
+        String systemMessage =
+            "Answer the user's question using only the provided information below:\n" +
+            String.join("\n", docs);
+
+        // This call is not traced yet
+        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+            .model(ChatModel.GPT_4O_MINI)
+            .addSystemMessage(systemMessage)
+            .addUserMessage(question)
+            .build();
+
+        ChatCompletion resp = client.chat().completions().create(params);
+        return resp.choices().get(0).message().content().orElse("");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(rag("Where did Harrison work?"));
+    }
+}
+```
+
 </CodeGroup>
 
 ## 4. Trace LLM calls
 
-To start, you’ll trace all your OpenAI calls. LangSmith provides wrappers:
+To start, you'll trace all your OpenAI calls. LangSmith provides wrappers:
 
 - Python: [`wrap_openai`](https://docs.smith.langchain.com/reference/python/wrappers/langsmith.wrappers._openai.wrap_openai)
 - TypeScript: [`wrapOpenAI`](https://docs.smith.langchain.com/reference/js/functions/wrappers_openai.wrapOpenAI)
+- Java: [`WrappedOpenAIClient`](https://javadoc.io/doc/com.langchain.smith/langsmith-java/latest/com/langchain/smith/wrappers/openai/WrappedOpenAIClient.html)
 
 This snippet wraps the OpenAI client so that every subsequent model call is logged automatically as a traced child run in LangSmith.
 
@@ -228,6 +311,56 @@ This snippet wraps the OpenAI client so that every subsequent model call is logg
     })();
     ```
 
+    ```java Java highlight={2,3,8,10}
+    import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+    import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+    import com.openai.models.ChatModel;
+    import com.openai.models.chat.completions.ChatCompletion;
+    import com.openai.models.chat.completions.ChatCompletionCreateParams;
+    import java.util.Arrays;
+    import java.util.List;
+
+    public class RagApp {
+
+        public static List<String> retriever(String query) {
+            return Arrays.asList("Harrison worked at Kensho");
+        }
+
+        // Configure OpenTelemetry for LangSmith
+        static {
+            OpenTelemetryConfig.builder()
+                .fromEnv() // reads LANGSMITH_API_KEY and LANGSMITH_PROJECT
+                .build();
+        }
+
+        // Wrap OpenAI client to automatically trace calls
+        static WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        public static String rag(String question) {
+            List<String> docs = retriever(question);
+            String systemMessage =
+                "Answer the user's question using only the provided information below:\n" +
+                String.join("\n", docs);
+
+            ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+                .model(ChatModel.GPT_4O_MINI)
+                .addSystemMessage(systemMessage)
+                .addUserMessage(question)
+                .build();
+
+            ChatCompletion resp = client.chat().completions().create(params);
+            return resp.choices().get(0).message().content().orElse("");
+        }
+
+        public static void main(String[] args) {
+            System.out.println(rag("Where did Harrison work?"));
+
+            // Flush traces to ensure they're sent to LangSmith
+            OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        }
+    }
+    ```
+
     </CodeGroup>
 
 1. Call your application:
@@ -240,6 +373,14 @@ This snippet wraps the OpenAI client so that every subsequent model call is logg
 
     ```bash TypeScript
     npx ts-node app.ts
+    ```
+
+    ```bash Java
+    # Using Maven
+    mvn compile exec:java -Dexec.mainClass="RagApp"
+
+    # Or using Gradle
+    ./gradlew run
     ```
 
     </CodeGroup>
@@ -269,7 +410,7 @@ This snippet wraps the OpenAI client so that every subsequent model call is logg
 
 ## 5. Trace an entire application
 
-You can also use the `traceable` decorator for [Python](https://docs.smith.langchain.com/reference/python/run_helpers/langsmith.run_helpers.traceable) or [TypeScript](https://langsmith-docs-bdk0fivr6-langchain.vercel.app/reference/js/functions/traceable.traceable) to trace your entire application instead of just the LLM calls.
+You can also use the `traceable` decorator for [Python](https://docs.smith.langchain.com/reference/python/run_helpers/langsmith.run_helpers.traceable) or [TypeScript](https://langsmith-docs-bdk0fivr6-langchain.vercel.app/reference/js/functions/traceable.traceable) to trace your entire application instead of just the LLM calls. In Java, you can use [OpenTelemetry spans](https://opentelemetry.io/docs/instrumentation/java/manual/) to create custom traces.
 
 1. Include the highlighted code in your app file:
 
@@ -338,6 +479,71 @@ You can also use the `traceable` decorator for [Python](https://docs.smith.langc
     })();
     ```
 
+    ```java Java highlight={3,4,5,14,20-24,33-38}
+    import com.langchain.smith.wrappers.openai.OpenTelemetryConfig;
+    import com.langchain.smith.wrappers.openai.WrappedOpenAIClient;
+    import io.opentelemetry.api.GlobalOpenTelemetry;
+    import io.opentelemetry.api.trace.Span;
+    import io.opentelemetry.api.trace.Tracer;
+    import io.opentelemetry.context.Scope;
+    import com.openai.models.ChatModel;
+    import com.openai.models.chat.completions.ChatCompletion;
+    import com.openai.models.chat.completions.ChatCompletionCreateParams;
+    import java.util.Arrays;
+    import java.util.List;
+
+    public class RagApp {
+
+        static Tracer tracer;
+
+        public static List<String> retriever(String query) {
+            return Arrays.asList("Harrison worked at Kensho");
+        }
+
+        static {
+            OpenTelemetryConfig.builder()
+                .fromEnv()
+                .build();
+            tracer = GlobalOpenTelemetry.get().getTracer("rag-app");
+        }
+
+        static WrappedOpenAIClient client = WrappedOpenAIClient.fromEnv();
+
+        public static String rag(String question) {
+            // Create a span to trace the entire RAG pipeline
+            Span ragSpan = tracer.spanBuilder("rag")
+                .setAttribute("question", question)
+                .startSpan();
+
+            try (Scope scope = ragSpan.makeCurrent()) {
+                List<String> docs = retriever(question);
+                String systemMessage =
+                    "Answer the user's question using only the provided information below:\n" +
+                    String.join("\n", docs);
+
+                ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+                    .model(ChatModel.GPT_4O_MINI)
+                    .addSystemMessage(systemMessage)
+                    .addUserMessage(question)
+                    .build();
+
+                ChatCompletion resp = client.chat().completions().create(params);
+                String answer = resp.choices().get(0).message().content().orElse("");
+
+                ragSpan.setAttribute("answer", answer);
+                return answer;
+            } finally {
+                ragSpan.end();
+            }
+        }
+
+        public static void main(String[] args) {
+            System.out.println(rag("Where did Harrison work?"));
+            OpenTelemetryConfig.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        }
+    }
+    ```
+
     </CodeGroup>
 
 1. Call the application again to create a run:
@@ -350,6 +556,14 @@ You can also use the `traceable` decorator for [Python](https://docs.smith.langc
 
     ```bash TypeScript
     npx ts-node app.ts
+    ```
+
+    ```bash Java
+    # Using Maven
+    mvn compile exec:java -Dexec.mainClass="RagApp"
+
+    # Or using Gradle
+    ./gradlew run
     ```
 
     </CodeGroup>

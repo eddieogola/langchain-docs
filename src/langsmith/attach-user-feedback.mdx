@@ -88,6 +88,40 @@ await client.createFeedback(
 );
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.models.feedback.FeedbackCreate;
+import java.util.UUID;
+
+public class FeedbackExample {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        // ... Run your application and get the run_id...
+        UUID runId = UUID.fromString("your-run-id-here");
+
+        // Provide feedback for a trace or run
+        client.feedback().create(FeedbackCreate.builder()
+            .runId(runId)
+            .key("user_feedback")
+            .score(1.0)
+            .comment("the user said that ...")
+            .build());
+
+        // Provide feedback with additional metadata
+        client.feedback().create(FeedbackCreate.builder()
+            .runId(runId)
+            .key("correctness")
+            .score(0.0)
+            .comment("This step needs improvement")
+            .build());
+
+        System.out.println("Feedback logged successfully");
+    }
+}
+```
+
 </CodeGroup>
 
 You can even log feedback for in-progress runs using `create_feedback() / createFeedback()`. See [this guide](/langsmith/access-current-span) for how to get the run ID of an in-progress run.

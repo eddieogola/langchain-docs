@@ -98,6 +98,68 @@ await client.createExamples({
 });
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.core.JsonValue;
+import com.langchain.smith.models.datasets.DatasetCreate;
+import com.langchain.smith.models.examples.Example;
+import com.langchain.smith.models.examples.ExampleCreateParams;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public class DatasetManagement {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        List<Map<String, Map<String, String>>> examples = Arrays.asList(
+            Map.of(
+                "inputs", Map.of("question", "What is the largest mammal?"),
+                "outputs", Map.of("answer", "The blue whale"),
+                "metadata", Map.of("source", "Wikipedia")
+            ),
+            Map.of(
+                "inputs", Map.of("question", "What do mammals and birds have in common?"),
+                "outputs", Map.of("answer", "They are both warm-blooded"),
+                "metadata", Map.of("source", "Wikipedia")
+            ),
+            Map.of(
+                "inputs", Map.of("question", "What are reptiles known for?"),
+                "outputs", Map.of("answer", "Having scales"),
+                "metadata", Map.of("source", "Wikipedia")
+            ),
+            Map.of(
+                "inputs", Map.of("question", "What's the main characteristic of amphibians?"),
+                "outputs", Map.of("answer", "They live both in water and on land"),
+                "metadata", Map.of("source", "Wikipedia")
+            )
+        );
+
+        String datasetName = "Elementary Animal Questions";
+
+        // Create dataset
+        var dataset = client.datasets().create(DatasetCreate.builder()
+            .name(datasetName)
+            .description("Questions and answers about animal phylogenetics.")
+            .build());
+
+        // Create examples in bulk
+        for (var example : examples) {
+            client.examples().create(ExampleCreateParams.builder()
+                .datasetId(dataset.id())
+                .inputs(JsonValue.from(example.get("inputs")))
+                .outputs(JsonValue.from(example.get("outputs")))
+                .metadata(JsonValue.from(example.get("metadata")))
+                .build());
+        }
+
+        System.out.println("Dataset created with ID: " + dataset.id());
+    }
+}
+```
+
 </CodeGroup>
 
 ### Create a dataset from traces
@@ -164,6 +226,47 @@ await client.createExamples({
 });
 ```
 
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.core.JsonValue;
+import com.langchain.smith.models.datasets.DatasetCreate;
+import com.langchain.smith.models.examples.ExampleCreateParams;
+import com.langchain.smith.models.runs.Run;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+public class DatasetFromTraces {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+        String datasetName = "Example Dataset";
+
+        // Filter runs to add to the dataset
+        List<Run> runs = StreamSupport.stream(
+            client.runs().list("my_project").spliterator(), false)
+            .filter(run -> run.parentRunId().isEmpty()) // is_root=true
+            .filter(run -> run.error().isEmpty()) // error=false
+            .collect(Collectors.toList());
+
+        // Create dataset
+        var dataset = client.datasets().create(DatasetCreate.builder()
+            .name(datasetName)
+            .description("An example dataset")
+            .build());
+
+        // Create examples from runs
+        for (Run run : runs) {
+            client.examples().create(ExampleCreateParams.builder()
+                .datasetId(dataset.id())
+                .inputs(JsonValue.from(run.inputs()))
+                .outputs(JsonValue.from(run.outputs().orElse(null)))
+                .build());
+        }
+    }
+}
+```
+
 </CodeGroup>
 
 ### Create a dataset from a CSV file
@@ -209,6 +312,62 @@ const dataset = await client.uploadCsv({
   description: "Dataset created from a CSV file",
   dataType: "kv"
 });
+```
+
+```java Java
+import com.langchain.smith.client.LangsmithClient;
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient;
+import com.langchain.smith.core.JsonValue;
+import com.langchain.smith.models.datasets.DatasetCreate;
+import com.langchain.smith.models.examples.ExampleCreateParams;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.*;
+
+public class DatasetFromCsv {
+    public static void main(String[] args) throws Exception {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+
+        String csvFile = "path/to/your/csvfile.csv";
+        List<String> inputKeys = Arrays.asList("column1", "column2"); // replace with your input column names
+        List<String> outputKeys = Arrays.asList("output1", "output2"); // replace with your output column names
+
+        // Create dataset
+        var dataset = client.datasets().create(DatasetCreate.builder()
+            .name("My CSV Dataset")
+            .description("Dataset created from a CSV file")
+            .dataType(DatasetCreate.DataType.KV)
+            .build());
+
+        // Parse CSV and create examples
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            String headerLine = br.readLine();
+            String[] headers = headerLine.split(",");
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+
+                Map<String, Object> inputs = new HashMap<>();
+                Map<String, Object> outputs = new HashMap<>();
+
+                for (int i = 0; i < headers.length; i++) {
+                    if (inputKeys.contains(headers[i])) {
+                        inputs.put(headers[i], values[i]);
+                    } else if (outputKeys.contains(headers[i])) {
+                        outputs.put(headers[i], values[i]);
+                    }
+                }
+
+                client.examples().create(ExampleCreateParams.builder()
+                    .datasetId(dataset.id())
+                    .inputs(JsonValue.from(inputs))
+                    .outputs(JsonValue.from(outputs))
+                    .build());
+            }
+        }
+    }
+}
 ```
 
 </CodeGroup>
@@ -259,6 +418,17 @@ import { Client } from "langsmith";
 const client = new Client();
 ```
 
+```java Java
+import com.langchain.smith.LangsmithClient;
+import com.langchain.smith.LangsmithOkHttpClient;
+
+public class DatasetOperations {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+    }
+}
+```
+
 </CodeGroup>
 
 ### Query all datasets
@@ -271,6 +441,10 @@ datasets = client.list_datasets()
 
 ```typescript TypeScript
 const datasets = await client.listDatasets();
+```
+
+```java Java
+Iterable<Dataset> datasets = client.datasets().list();
 ```
 
 </CodeGroup>
@@ -291,6 +465,14 @@ const datasets = await client.listDatasets({
 });
 ```
 
+```java Java
+Iterable<Dataset> datasets = client.datasets().list(
+    DatasetsListParams.builder()
+        .name("My Test Dataset 1")
+        .build()
+);
+```
+
 </CodeGroup>
 
 If you want to do a case-invariant substring search, try the following:
@@ -305,6 +487,14 @@ datasets = client.list_datasets(dataset_name_contains="some substring")
 const datasets = await client.listDatasets({
   datasetNameContains: "some substring"
 });
+```
+
+```java Java
+Iterable<Dataset> datasets = client.datasets().list(
+    DatasetsListParams.builder()
+        .nameContains("some substring")
+        .build()
+);
 ```
 
 </CodeGroup>
@@ -323,6 +513,14 @@ datasets = client.list_datasets(data_type="chat")
 const datasets = await client.listDatasets({
   dataType: "chat"
 });
+```
+
+```java Java
+Iterable<Dataset> datasets = client.datasets().list(
+    DatasetsListParams.builder()
+        .dataType(DataType.CHAT)
+        .build()
+);
 ```
 
 </CodeGroup>
@@ -349,6 +547,17 @@ import { Client } from "langsmith";
 const client = new Client();
 ```
 
+```java Java
+import com.langchain.smith.LangsmithClient;
+import com.langchain.smith.LangsmithOkHttpClient;
+
+public class ExampleOperations {
+    public static void main(String[] args) {
+        LangsmithClient client = LangsmithOkHttpClient.fromEnv();
+    }
+}
+```
+
 </CodeGroup>
 
 ### List all examples for a dataset
@@ -367,6 +576,14 @@ const examples = await client.listExamples({
 });
 ```
 
+```java Java
+Iterable<Example> examples = client.examples().list(
+    ExamplesListParams.builder()
+        .datasetId("c9ace0d8-a82c-4b6c-13d2-83401d68e9ab")
+        .build()
+);
+```
+
 </CodeGroup>
 
 Or you can filter by dataset name (this must exactly match the dataset name you want to query)
@@ -381,6 +598,14 @@ examples = client.list_examples(dataset_name="My Test Dataset")
 const examples = await client.listExamples({
   datasetName: "My test Dataset"
 });
+```
+
+```java Java
+Iterable<Example> examples = client.examples().list(
+    ExamplesListParams.builder()
+        .datasetName("My Test Dataset")
+        .build()
+);
 ```
 
 </CodeGroup>
@@ -413,6 +638,20 @@ const examples = await client.listExamples({
 });
 ```
 
+```java Java
+List<String> exampleIds = Arrays.asList(
+    "734fc6a0-c187-4266-9721-90b7a025751a",
+    "d6b4c1b9-6160-4d63-9b61-b034c585074f",
+    "4d31df4e-f9c3-4a6e-8b6c-65701c2fed13"
+);
+
+Iterable<Example> examples = client.examples().list(
+    ExamplesListParams.builder()
+        .id(exampleIds)
+        .build()
+);
+```
+
 </CodeGroup>
 
 ### List examples by metadata
@@ -432,6 +671,18 @@ const examples = await client.listExamples({
   datasetName: datasetName,
   metadata: {foo: "bar"}
 });
+```
+
+```java Java
+Map<String, Object> metadata = new HashMap<>();
+metadata.put("foo", "bar");
+
+Iterable<Example> examples = client.examples().list(
+    ExamplesListParams.builder()
+        .datasetName(datasetName)
+        .metadata(metadata)
+        .build()
+);
 ```
 
 </CodeGroup>
@@ -464,6 +715,15 @@ const examples = await client.listExamples({
 });
 ```
 
+```java Java
+Iterable<Example> examples = client.examples().list(
+    ExamplesListParams.builder()
+        .datasetName(datasetName)
+        .filter("and(not(has(metadata, '{\"foo\": \"bar\"}')), exists(metadata, \"tenant_id\"))")
+        .build()
+);
+```
+
 </CodeGroup>
 
 ## Update examples
@@ -491,6 +751,27 @@ await client.updateExample(example.id, {
   metadata: { "foo": "bar" },
   split: "train",
 });
+```
+
+```java Java
+Map<String, Object> inputs = new HashMap<>();
+inputs.put("input", "updated input");
+
+Map<String, Object> outputs = new HashMap<>();
+outputs.put("output", "updated output");
+
+Map<String, Object> metadata = new HashMap<>();
+metadata.put("foo", "bar");
+
+client.examples().update(
+    example.id(),
+    ExampleUpdateParams.builder()
+        .inputs(JsonValue.from(inputs))
+        .outputs(JsonValue.from(outputs))
+        .metadata(JsonValue.from(metadata))
+        .split(Arrays.asList("train"))
+        .build()
+);
 ```
 
 </CodeGroup>
@@ -531,6 +812,47 @@ await client.updateExamples([
     split: "training"
   },
 ]);
+```
+
+```java Java
+Map<String, Object> inputs1 = new HashMap<>();
+inputs1.put("input", "updated input 1");
+
+Map<String, Object> outputs1 = new HashMap<>();
+outputs1.put("output", "updated output 1");
+
+Map<String, Object> metadata1 = new HashMap<>();
+metadata1.put("foo", "baz");
+
+Map<String, Object> inputs2 = new HashMap<>();
+inputs2.put("input", "updated input 2");
+
+Map<String, Object> outputs2 = new HashMap<>();
+outputs2.put("output", "updated output 2");
+
+Map<String, Object> metadata2 = new HashMap<>();
+metadata2.put("foo", "qux");
+
+client.examples().bulkUpdate(
+    ExampleBulkUpdateParams.builder()
+        .updates(Arrays.asList(
+            ExampleUpdate.builder()
+                .exampleId(example.id())
+                .inputs(JsonValue.from(inputs1))
+                .outputs(JsonValue.from(outputs1))
+                .metadata(JsonValue.from(metadata1))
+                .split(Arrays.asList("training", "foo"))
+                .build(),
+            ExampleUpdate.builder()
+                .exampleId(example2.id())
+                .inputs(JsonValue.from(inputs2))
+                .outputs(JsonValue.from(outputs2))
+                .metadata(JsonValue.from(metadata2))
+                .split(Arrays.asList("training"))
+                .build()
+        ))
+        .build()
+);
 ```
 
 </CodeGroup>
