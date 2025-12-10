@@ -1,0 +1,139 @@
+---
+title: Build an agent with progressive disclosure and skills
+sidebarTitle: Progressive disclosure & skills
+---
+
+**Progressive disclosure** is a context management technique where an agent loads into context only what's necessary for the current task. Instead of providing all available information upfront, the agent discovers and retrieves relevant information on-demand through tool calls.
+
+This tutorial demonstrates how to build an agent that uses **skills** - modular, specialized capabilities that different teams can develop independently. The agent dynamically discovers and loads only the skills it needs, keeping context lean while maintaining access to a broad range of capabilities.
+
+## What are skills and progressive disclosure?
+
+Skills are self-contained units of functionality (prompts, tools, and logic) that handle specific business tasks. Progressive disclosure with skills provides **context efficiency** by loading skill details only when needed rather than upfront. This approach enables **team autonomy**, allowing different teams to build specialized skills independently without coordinating changes to the core agent. It maintains **single-agent simplicity** - instead of managing multiple sub-agents, one agent dynamically discovers which skills it needs. This architecture naturally **scales** as you add new skills without modifying the core agent logic.
+
+In this tutorial, you'll build an agent that discovers available skills through lightweight descriptions in the system prompt, then loads full skill content on-demand using tool calls. The agent applies the appropriate skill context only when needed and maintains clean context by loading skills progressively rather than all at once.
+
+## How progressive disclosure works
+
+Progressive disclosure is commonly implemented using tool calls. For example, Claude Code uses tools to read files from the filesystem - it doesn't load all files upfront, but reads them as needed.
+
+**Context management**: By loading only what's necessary, progressive disclosure reduces context usage compared to loading all skills upfront. When combined with summarization techniques, context can be cleaned up as it grows. This architecture can scale to large numbers of skills - you could have dozens or hundreds available, but only load the 2-3 needed for any given task.
+
+**Latency considerations**: Progressive disclosure requires additional tool calls to discover and load skills. Depending on your architecture, this might involve multiple round trips (e.g., listing skills, then loading specific ones), which can introduce noticeable latency during the discovery phase.
+
+**Single-agent simplicity**: Using a single agent with progressive disclosure keeps all conversation history in a single thread - you don't need to determine how to pass context between agents or which agent owns which parts of the conversation. You also eliminate the need to manage transitions between different agents. However, this approach has limitations around **workflow constraints**. With basic skill implementations, you cannot enforce that one skill must be used only after another has been tried - you rely on prompting alone. If you implement skills with LangChain middleware, you can add such constraints by conditionally preventing certain tool calls based on information stored in agent memory via LangGraph's durable execution (e.g., blocking skill B discovery until skill A has been loaded and used).
+
+## Progressive disclosure vs. other patterns
+
+Unlike the [supervisor pattern](/oss/javascript/langchain/supervisor) where a supervisor routes to specialized sub-agents, or the [handoffs pattern](/oss/javascript/langchain/customer-support-handoffs) where agents pass control sequentially, progressive disclosure uses a **single agent** that dynamically loads specialized knowledge on demand.
+
+| Pattern                    | When to use                                                                                  | Context approach                                 |
+|----------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------|
+| **Progressive disclosure** | Large number of specialized tasks, context efficiency critical, team-based skill development | Single agent, loads skills on-demand             |
+| **Supervisor**             | Clear task routing, sub-agents need independence, parallel execution                         | Multiple agents, supervisor routes tasks         |
+| **Handoffs**               | Sequential workflow stages, state machine logic                                              | Single agent, different configurations per stage |
+
+## Architecture overview
+
+[PLACEHOLDER: Mermaid diagram showing:
+1. User query comes in
+2. Agent sees lightweight skill descriptions in system prompt
+3. Agent decides which skill(s) might be relevant
+4. Agent calls discover_skill tool to load full skill content
+5. Agent applies skill context to solve the task
+6. Optional: cleanup/summarization if context grows]
+
+## Setup
+
+1. Install the `langchain` package:
+
+    <CodeGroup>
+    ```bash pip
+    pip install langchain
+    ```
+    ```bash conda
+    conda install langchain -c conda-forge
+    ```
+    </CodeGroup>
+
+    For more details, see our [Installation guide](/oss/javascript/langchain/install).
+
+2. Set up [LangSmith](https://smith.langchain.com) to inspect what is happening inside your agent:
+
+    <CodeGroup>
+    ```bash bash
+    export LANGSMITH_TRACING="true"
+    export LANGSMITH_API_KEY="..."
+    ```
+    ```python python
+    import getpass
+    import os
+
+    os.environ["LANGSMITH_TRACING"] = "true"
+    os.environ["LANGSMITH_API_KEY"] = getpass.getpass()
+    ```
+    </CodeGroup>
+
+3. Select a chat model. For this tutorial, we'll use Claude 3.5 Sonnet:
+
+    <CodeGroup>
+    ```python python
+    from langchain.chat_models import init_chat_model
+
+    model = init_chat_model("anthropic:claude-3-5-sonnet-latest")
+    ```
+    </CodeGroup>
+
+## 1. Define skills
+
+[PLACEHOLDER: Show how to define skills as structured data. Each skill should have an id/name, a brief_description (what goes in system prompt), full_content (detailed instructions loaded on-demand), and optionally skill-specific tools.
+
+Example structure for 3 skills: expense_reporting (handles expense report submission and approval), travel_booking (books flights and hotels), and payroll_inquiry (answers payroll and benefits questions).]
+
+## 2. Create skill discovery tools
+
+[PLACEHOLDER: Define tools that allow the agent to discover and load skills. The list_available_skills() tool returns lightweight descriptions of all available skills. The load_skill(skill_name) tool returns full skill content via Command, enriching the agent's context. Optionally, implement unload_skill(skill_name) for context cleanup when skills are no longer needed.]
+
+## 3. Build skill middleware
+
+[PLACEHOLDER: Create middleware using @wrap_model_call or @before_model. The middleware should inject lightweight skill descriptions into the system prompt, register skill discovery tools, enrich the system prompt with full skill content when a skill is loaded via tool call, and manage which skills are currently "active" in context.]
+
+## 4. Create the agent with skill support
+
+[PLACEHOLDER: Show create_agent configured with the skill middleware, base tools (skill discovery tools), a state schema that tracks loaded_skills, and a checkpointer for persistence across conversation turns.]
+
+## 5. Test progressive disclosure
+
+[PLACEHOLDER: Interactive example demonstrating the progressive disclosure flow. A user asks about expense reports, the agent sees skill descriptions and decides to load the expense_reporting skill, calls load_skill("expense_reporting") to retrieve full skill content, and then uses that knowledge to answer the question. Show the context difference before and after skill loading to illustrate the progressive disclosure mechanism.]
+
+## 6. Add multiple skills
+
+[PLACEHOLDER: Show an example where the agent needs to use multiple skills together. The user asks a compound question that requires both travel_booking and expense_reporting capabilities. The agent discovers and loads both skills, then coordinates between them to provide a comprehensive answer.]
+
+## 7. Implement context cleanup
+
+[PLACEHOLDER: Optional section demonstrating context management techniques. Show how to track context size, determine when to trigger summarization, unload skills that are no longer needed, and use middleware to automatically manage context as conversations grow longer.]
+
+## 8. Team-based skill development
+
+[PLACEHOLDER: Best practices section covering how to structure skill definitions to enable team autonomy, establish skill interface conventions, test individual skills in isolation, version and update skills without breaking existing agents, and organize skills in a centralized library or registry that multiple teams can contribute to.]
+
+## Complete example
+
+[PLACEHOLDER: Full runnable script combining all the pieces]
+
+## Next steps
+
+- Learn about [middleware](/oss/javascript/langchain/middleware) for more dynamic agent behaviors
+- Explore the [handoffs pattern](/oss/javascript/langchain/customer-support-handoffs) for sequential workflows
+- Read the [supervisor pattern](/oss/javascript/langchain/supervisor) for parallel task routing
+- Use [LangSmith](https://smith.langchain.com) to debug and monitor skill loading
+
+---
+
+<Callout icon="pen-to-square" iconType="regular">
+    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/progressive-disclosure-skills.mdx)
+</Callout>
+<Tip icon="terminal" iconType="regular">
+    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Tip>
