@@ -10,69 +10,61 @@ Multi-agent systems are useful when:
 * A single agent has too many [tools](/oss/langchain/tools) and makes poor decisions about which to use.
 * [Context](/oss/concepts/context) or [memory](/oss/langchain/short-term-memory) grows too large for one agent to track effectively.
 * Tasks require **specialization** (e.g., a planner, researcher, math expert).
+* You need to **enforce sequential constraints** — unlocking capabilities only after certain conditions are met.
+* Different teams need to **develop and maintain agents independently**.
 
-## Multi-agent patterns
+## Architectures
 
-Multi-agent systems enable you to build sophisticated applications by combining specialized agents. There are two main patterns:
+There are four main architectures for building multi-agent systems, each suited to different use cases:
 
-| Pattern                           | How it works                                                                                                                                                     | Control flow                                               | Example use case                                 |
-|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|--------------------------------------------------|
-| [**Tool calling**](#tool-calling) | A **supervisor** agent calls other agents as *tools*. The “tool” agents don’t talk to the user directly — they just run their task and return results.                  | **Centralized**: all routing passes through the calling agent. | Task orchestration, structured workflows        |
-| [**Handoffs**](#handoffs)         | The current agent decides to **transfer control** to another agent. The active agent changes, and the user may continue interacting directly with the new agent. | **Decentralized**: agents can change who is active.            | Multi-domain conversations, specialist takeover |
+| Architecture | How it works | Best for |
+|--------------|--------------|----------|
+| [**Supervisor**](#supervisor) | A central agent calls sub-agents as tools | Task orchestration, parallel execution |
+| [**Dynamic agent**](#dynamic-agent) | One agent with dynamically changing prompts/tools based on state | Multi-stage conversations, sequential unlocking |
+| [**Workflow**](#workflow) | Agents connected via deterministic transitions | Pipelines, structured processing |
+| [**Skills**](#skills) | Specialized prompts invoked on-demand | Progressive disclosure, team distribution |
 
 <Tip>
-    You can mix both patterns! Use **handoffs** for agent switching and have each agent **call sub-agents as tools** for specialized tasks.
+    You can mix architectures! For example, a **supervisor** can manage **workflow** sub-graphs, or a **dynamic agent** can invoke **skills** at certain stages.
 </Tip>
 
-### Tool calling
+### Supervisor
 
-In tool calling, one agent (the **controller**) treats other agents as *tools* to be invoked when needed. The controller manages orchestration, while tool agents perform specific tasks and return results. For example:
-
-1. The **controller** receives input and decides which tool (sub-agent) to call.
-2. The **tool agent** runs its task based on the controller's instructions.
-3. The **tool agent** returns results to the controller.
-4. The **controller** decides the next step or finishes.
-
+In the **supervisor** architecture, a central supervisor agent coordinates sub-agents by calling them as tools. The supervisor decides which sub-agent to invoke, what input to provide, and how to combine results.
 
 ```mermaid
 graph LR
-    A[User] --> B[Controller agent]
-    B --> C[Tool agent 1]
-    B --> D[Tool agent 2]
+    A[User] --> B[Supervisor]
+    B --> C[Sub-agent A]
+    B --> D[Sub-agent B]
+    B --> E[Sub-agent C]
     C --> B
     D --> B
-    B --> E[User response]
+    E --> B
+    B --> F[User response]
 ```
 
-<Tip>
-    Agents used as tools are generally **not expected** to continue the conversation with the user. Their role is to perform a task and return results to the controller agent. If you need sub-agents to be able to converse with the user, use [handoffs](#handoffs) instead.
-</Tip>
+**Key characteristics:**
 
-#### When to use tool calling
+* **Centralized control**: All routing passes through the supervisor
+* **Sub-agents as tools**: Each sub-agent is wrapped as a callable tool
+* **No direct user interaction**: Sub-agents return results to the supervisor, not the user
+* **Parallel execution**: The supervisor can invoke multiple sub-agents in a single turn
 
-**Use tool calling (supervisor pattern)** when:
+#### When to use
 
-* You have multiple distinct domains (e.g., calendar, email, CRM, database).
-* Each domain has multiple tools or complex logic.
-* You want centralized workflow control.
-* Sub-agents don't need to converse directly with users.
+Use the supervisor pattern when:
 
-For simpler cases with just a few tools, use a single agent. Below are some examples of how you can build multi-agent systems using tool calling:
+* You have **multiple distinct domains** (e.g., calendar, email, CRM, database)
+* Sub-agents **don't need to converse directly** with users
+* You need to **coordinate multiple sub-agents** in a single pass
+* You want **centralized workflow control**
 
-- **Personal assistant**: A main agent coordinates calendar, email, and task management sub-agents
-    - Calendar sub-agent handles scheduling and availability checks
-    - Email sub-agent drafts, sends, and searches messages
-    - Task sub-agent manages to-do lists and reminders
+For simpler cases with just a few tools, use a single agent. Below are some examples:
 
-- **Research assistant**: A supervisor orchestrates research across multiple domains
-    - Web search sub-agent finds relevant sources
-    - Document analysis sub-agent extracts key information
-    - Synthesis sub-agent combines findings into coherent reports
-
-- **Data analysis platform**: One agent routes queries to specialized analyzers
-    - SQL sub-agent queries databases
-    - Python sub-agent runs statistical analysis
-    - Visualization sub-agent creates charts and graphs
+- **Personal assistant**: Supervisor coordinates calendar, email, and task management sub-agents
+- **Research assistant**: Supervisor orchestrates web search, document analysis, and synthesis sub-agents
+- **Data analysis platform**: Supervisor routes queries to SQL, Python, and visualization sub-agents
 
 <Card
     title="Tutorial: Build a supervisor agent"
@@ -298,46 +290,47 @@ const callSubagent1 = tool(
 :::
 
 
-### Handoffs
+### Dynamic agent
 
-In **handoffs**, agents pass control to each other through **state transitions**. Think of it as a state machine where the system tracks which agent is currently active, and that agent's configuration (system prompt, tools, etc.) determines the behavior. For example:
-
-1. The **current agent** decides it needs to transfer control to another agent.
-2. It updates a state variable (e.g., `active_agent`) using a tool that modifies the graph state.
-3. On the next conversational turn, the graph reads this state and configures itself with the **new agent's** system prompt, tools, and behavior.
-4. The **new agent** interacts directly with the user until it decides to hand off again or finish.
+In the **dynamic agent** architecture, you have a single agent whose behavior (prompt, tools, and capabilities) changes dynamically based on state. This creates a state machine where each "stage" represents a different agent configuration.
 
 ```mermaid
 graph LR
-    A[User] --> B[Agent A]
-    B --> C[Agent B]
-    C --> A
+    A[User] --> B[Dynamic Agent]
+    B --> |state: triage| C[Triage config]
+    B --> |state: specialist| D[Specialist config]
+    C --> B
+    D --> B
+    B --> A
 ```
 
-#### When to use handoffs
+**Key characteristics:**
 
-Handoffs are particularly valuable for **"online"** customer support scenarios where you need to collect information from users in a specific sequence. For example:
+* **Single agent, multiple configurations**: The agent identity changes based on state
+* **State-driven behavior**: Prompts and tools are selected based on a state variable (e.g., `active_agent`)
+* **Direct user interaction**: The active agent configuration handles user messages directly
+* **Persistent state**: State survives across conversation turns
 
-* Collecting a warranty ID before processing a refund.
-* Gathering account details before escalating to a specialist.
-* Verifying identity before accessing sensitive information.
+#### When to use
 
-The key advantage is **sequential unlocking** - you can design workflows where additional options or agents become available only after required information has been collected. Below are some examples of how you can build multi-agent systems using handoffs:
+Use the dynamic agent pattern when:
 
-- **Customer support chatbot**: Agents pass control based on conversation stage
-    - Triage agent collects initial information (warranty status, product details)
-    - Classification agent identifies issue type (billing, technical, returns)
-    - Resolution agent provides solutions or escalates to human support
+* You need to **enforce sequential constraints** — unlock capabilities only after preconditions are met
+* Sub-agents need to **converse directly with the user**
+* You want to **update prompts and tools** based on conversation progress
+* You're building **multi-stage conversational flows**
 
-- **Multi-domain conversational AI**: Agents hand off when topic changes
-    - General conversation agent handles small talk
-    - Technical support agent answers product questions
-    - Sales agent discusses pricing and purchases
+This pattern is particularly valuable for **"online"** customer support scenarios where you need to collect information in a specific sequence:
 
-- **Onboarding assistant**: Sequential information collection with branching paths
-    - Account setup agent creates credentials
-    - Preference collection agent gathers user preferences
-    - Tour agent walks through features based on user role
+* Collecting a warranty ID before processing a refund
+* Gathering account details before escalating to a specialist
+* Verifying identity before accessing sensitive information
+
+Below are some examples:
+
+- **Customer support chatbot**: Triage agent collects information, then hands off to specialist
+- **Onboarding flows**: Account setup → preference collection → feature tour
+- **Multi-domain chat**: General conversation → technical support → sales
 
 <Card
     title="Tutorial: Build a customer support agent with handoffs"
@@ -345,32 +338,32 @@ The key advantage is **sequential unlocking** - you can design workflows where a
     href="/oss/langchain/customer-support-handoffs"
     arrow cta="Learn more"
 >
-    Learn how to build a customer support workflow using the handoffs pattern, where agents pass control through state transitions.
+    Learn how to build a customer support workflow using the dynamic agent pattern, where agents pass control through state transitions.
 </Card>
 
 
 <Tip>
-    Design handoff flows carefully to avoid creating rigid, frustrating experiences. Users should be able to:
+    Design dynamic agent flows carefully to avoid creating rigid, frustrating experiences. Users should be able to:
     * Correct typos or mistakes in previously provided information.
     * Change the conversation flow when appropriate.
     * Navigate back to previous steps if needed.
 
-    Overly restrictive handoff patterns can feel like poorly designed phone trees.
+    Overly restrictive flows can feel like poorly designed phone trees.
 </Tip>
 
-#### How handoffs work
+#### How it works
 
-At the core, handoffs rely on [persistent state](/oss/langchain/short-term-memory) that survives across conversation turns:
+At the core, the dynamic agent pattern relies on [persistent state](/oss/langchain/short-term-memory) that survives across conversation turns:
 
-1. **State variable**: A field in your state schema (e.g., `active_agent: str`) tracks which agent is currently active.
-2. **State update tool**: The agent uses a tool to change the value of `active_agent` when handing off control.
-3. **Dynamic configuration**: On each turn, the graph entry point reads `active_agent` from the persisted state and dynamically configures the appropriate system prompt, tools, and behavior for that agent.
+1. **State variable**: A field in your state schema (e.g., `active_agent: str`) tracks which agent configuration is currently active.
+2. **State update tool**: The agent uses a tool to change the value of `active_agent` when transitioning to a new stage.
+3. **Dynamic configuration**: On each turn, the graph entry point reads `active_agent` from the persisted state and dynamically configures the appropriate system prompt, tools, and behavior.
 
-This pattern creates a state machine where each agent represents a distinct state with its own behavior and capabilities. The state persists between user messages, allowing the conversation to resume with the correct agent configuration.
+This pattern creates a state machine where each configuration represents a distinct state with its own behavior and capabilities.
 
 #### Example
 
-Here's an example showing how agents hand off control:
+Here's an example showing how agents transition between configurations:
 
 :::python
 ```python
@@ -427,19 +420,251 @@ const agent = createAgent({
 ```
 :::
 
-The key mechanism is using @[`Command`] to update state fields that control which agent is active. Middleware can then read this state and dynamically configure the agent's behavior.
+The key mechanism is using @[`Command`] to update state fields that control which agent configuration is active. Middleware can then read this state and dynamically configure the agent's behavior.
 
 #### Best practices
 
-When implementing handoffs:
+When implementing dynamic agents:
 
 1. **Bound message histories**: Use @[`trim_messages`] or @[`@before_model`] [middleware](/oss/langchain/short-term-memory#trim-messages) to prevent unbounded growth.
 2. **State for cross-agent memory**: Store structured data (warranty status, issue type) in @[`AgentState`] [custom state](/oss/langchain/short-term-memory#customizing-agent-memory), not message history.
-3. **Inject context summaries**: Add state information to system prompts so agents know what previous agents learned.
+3. **Inject context summaries**: Add state information to system prompts so each configuration knows what previous stages learned.
 4. **Validate state transitions**: Check required state exists before allowing transitions to later stages.
 5. **Allow backward navigation**: Provide @[`@tool`]s that return @[`Command`] objects for users to correct mistakes and return to previous stages.
 6. **Ensure valid message sequences**: Make sure message histories follow provider requirements (user → AI → tool alternation).
 7. **Use checkpointers**: Always include a @[`InMemorySaver`] [checkpointer](/oss/langchain/short-term-memory#usage) to persist state across turns.
+
+
+### Workflow
+
+In the **workflow** architecture, agents are connected via deterministic transitions defined at graph construction time. The flow between agents is explicit and predictable.
+
+```mermaid
+graph LR
+    A[User] --> B[Agent A]
+    B --> C[Agent B]
+    C --> D[Agent C]
+    D --> E[Result]
+```
+
+**Key characteristics:**
+
+* **Deterministic flow**: Transitions are defined explicitly via graph edges
+* **Predictable execution**: You always know which agent runs next
+* **No LLM routing decisions**: The graph structure controls flow, not LLM calls
+* **Pipeline-style processing**: Each agent processes and passes to the next
+
+#### When to use
+
+Use the workflow pattern when:
+
+* You have a **fixed sequence** of processing steps
+* Agents are **independent** and don't need to be aware of each other
+* You want **predictable, debuggable** execution
+* You're building **processing pipelines** (e.g., extract → transform → load)
+
+Below are some examples:
+
+- **Content pipeline**: Research → draft → edit → publish
+- **Data processing**: Extract → validate → transform → load
+- **Document processing**: Parse → classify → extract entities → summarize
+
+#### Example
+
+This example shows a content pipeline where each node is a full agent with its own tools:
+
+:::python
+```python
+from langgraph.graph import StateGraph, MessagesState, START
+from langchain.agents import create_agent
+
+# Create specialized agents for each stage
+research_agent = create_agent(
+    model="openai:gpt-4o",
+    tools=[web_search, fetch_url],
+    prompt="You are a research assistant. Search for and gather relevant information on the topic.",
+    name="researcher"
+)
+
+writing_agent = create_agent(
+    model="openai:gpt-4o",
+    tools=[create_outline, write_section],
+    prompt="You are a writer. Create content based on the research provided.",
+    name="writer"
+)
+
+editing_agent = create_agent(
+    model="openai:gpt-4o",
+    tools=[check_grammar, check_style],
+    prompt="You are an editor. Refine and improve the content for clarity and correctness.",
+    name="editor"
+)
+
+# Define the workflow with explicit edges
+workflow = (
+    StateGraph(MessagesState)
+    .add_node("research", research_agent)
+    .add_node("write", writing_agent)
+    .add_node("edit", editing_agent)
+    .add_edge(START, "research")
+    .add_edge("research", "write")
+    .add_edge("write", "edit")
+    .compile()
+)
+
+result = workflow.invoke({
+    "messages": [{"role": "user", "content": "Write an article about AI agents"}]
+})
+```
+:::
+:::js
+```typescript
+import { StateGraph, MessagesAnnotation, START } from "@langchain/langgraph";
+import { createAgent } from "langchain";
+
+// Create specialized agents for each stage
+const researchAgent = createAgent({
+  model: "openai:gpt-4o",
+  tools: [webSearch, fetchUrl],
+  prompt: "You are a research assistant. Search for and gather relevant information on the topic.",
+  name: "researcher"
+});
+
+const writingAgent = createAgent({
+  model: "openai:gpt-4o",
+  tools: [createOutline, writeSection],
+  prompt: "You are a writer. Create content based on the research provided.",
+  name: "writer"
+});
+
+const editingAgent = createAgent({
+  model: "openai:gpt-4o",
+  tools: [checkGrammar, checkStyle],
+  prompt: "You are an editor. Refine and improve the content for clarity and correctness.",
+  name: "editor"
+});
+
+// Define the workflow with explicit edges
+const workflow = new StateGraph(MessagesAnnotation)
+  .addNode("research", researchAgent)
+  .addNode("write", writingAgent)
+  .addNode("edit", editingAgent)
+  .addEdge(START, "research")
+  .addEdge("research", "write")
+  .addEdge("write", "edit")
+  .compile();
+
+const result = await workflow.invoke({
+  messages: [{ role: "user", content: "Write an article about AI agents" }]
+});
+```
+:::
+
+
+### Skills
+
+In the **skills** architecture, specialized capabilities are packaged as invokable "skills" that augment an agent's behavior. Skills are primarily prompt-driven specializations that an agent can invoke on-demand.
+
+```mermaid
+graph LR
+    A[User] --> B[Main Agent]
+    B --> C[Python skill]
+    B --> D[SQL skill]
+    B --> E[Docs skill]
+    C --> B
+    D --> B
+    E --> B
+    B --> A
+```
+
+**Key characteristics:**
+
+* **Prompt-driven specialization**: Skills are primarily defined by specialized prompts
+* **Progressive disclosure**: Skills become available based on context or user needs
+* **Team distribution**: Different teams can develop and maintain skills independently
+* **Lightweight composition**: Skills are simpler than full sub-agents
+
+#### When to use
+
+Use the skills pattern when:
+
+* You want a **single agent with many possible specializations**
+* You **don't need to enforce specific constraints** between skills
+* Different **teams need to develop capabilities independently**
+* You want **progressive disclosure** — reveal capabilities as needed
+
+Below are some examples:
+
+- **Coding assistant**: Skills for different languages, frameworks, or tasks (debugging, refactoring, testing)
+- **Knowledge base**: Skills for different domains (legal, medical, technical)
+- **Creative assistant**: Skills for different formats (email, report, presentation)
+
+<Note>
+Skills documentation is coming soon. This pattern is being developed as part of the [deep-agents](https://github.com/langchain-ai/deep-agents) project.
+</Note>
+
+
+## Choosing an architecture
+
+Use this guide to select the right architecture:
+
+```
+Do sub-agents need to converse directly with users?
+├── Yes → Do you need to enforce sequential constraints?
+│         ├── Yes → Dynamic agent
+│         └── No → Skills
+└── No → Do you need deterministic flow between agents?
+         ├── Yes → Workflow
+         └── No → Supervisor
+```
+
+**Additional considerations:**
+
+| Question | If yes, consider... |
+|----------|---------------------|
+| Do sub-agents need to be invoked in parallel? | Supervisor |
+| Do you need to persist state for sub-agents? | Dynamic agent (or stateful tools in Supervisor) |
+| Do you want agents developed independently by different teams? | Skills |
+| Do you need predictable, debuggable execution? | Workflow |
+| Do you want to coordinate multiple sub-agents in one pass? | Supervisor (or Skills if no constraints) |
+
+<Note>
+**Non-blocking sub-agent execution**
+
+Currently, LangGraph doesn't have built-in support for non-blocking sub-agent execution. If you have a use case that requires this (e.g., kicking off a long-running sub-agent and continuing with other work), please [file an issue](https://github.com/langchain-ai/langgraph/issues) describing your use case.
+
+One possible approach is using the LangGraph API server with loopback calls — exposing tools that allow an agent to start a run and check on its status asynchronously.
+</Note>
+
+
+## Communication between agents
+
+Regardless of architecture, you need to decide how agents communicate. The key questions are:
+
+### What information is passed between agents?
+
+* **Full message history**: Agents share their complete thought process (scratchpad)
+    * **Pro**: Better reasoning, more context for decisions
+    * **Con**: Context can grow quickly, may need memory management
+
+* **Final results only**: Agents share only their conclusions
+    * **Pro**: Cleaner context, better scaling
+    * **Con**: Loss of intermediate reasoning
+
+### How is state managed?
+
+* **Shared state**: All agents read/write to the same state object
+    * Best for: Tightly coupled agents that need to coordinate
+
+* **Isolated state**: Each agent has its own state, explicitly passed between agents
+    * Best for: Independent agents, cleaner boundaries
+
+### How are transitions represented?
+
+When using tool-based transitions (e.g., handoff tools in dynamic agents), you need to handle the LLM's tool call message. Most providers require tool calls to have corresponding tool result messages. Options:
+
+1. **Add a tool message**: "Successfully transferred to Agent X" (most common)
+2. **Remove the tool call message**: Filter it from history before the next agent sees it
 
 
 ## Customize agent context
