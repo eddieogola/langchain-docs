@@ -1298,7 +1298,7 @@
                     {
                       "group": "Tutorials",
                       "pages": [
-                        "langsmith/autogen-integration",
+                        "langsmith/deploy-other-frameworks",
                         "langsmith/use-stream-react",
                         "langsmith/generative-ui-react"
                       ]
