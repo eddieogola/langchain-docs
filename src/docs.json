@@ -1388,6 +1388,12 @@
                     "langsmith/agent-builder-code",
                     "langsmith/agent-builder-mcp-framework"
                   ]
+                },
+                {
+                  "group": "Additional resources",
+                  "pages": [
+                    "langsmith/agent-builder-pricing-faq"
+                  ]
                 }
               ]
             },
