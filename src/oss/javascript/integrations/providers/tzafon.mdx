@@ -2,7 +2,7 @@
 title: Tzafon
 ---
 
-This page covers all LangChain integrations with [Tzafon](https://www.tzafon.ai/), a research firm building scalable compute systems and foundation models for real-world interaction.
+This page covers all LangChain.js integrations with [Tzafon](https://www.tzafon.ai/), a research firm building scalable compute systems and foundation models for real-world interaction.
 
 Tzafon provides an OpenAI-compatible [Chat Completions API](https://docs.tzafon.ai/core-concepts/chat-completions) with models like `tzafon.sm-1` and `tzafon.northstar.cua.sft`.
 
@@ -12,11 +12,11 @@ Tzafon provides an OpenAI-compatible [Chat Completions API](https://docs.tzafon.
 2. Install the integration package:
 
 <CodeGroup>
-```bash pip
-pip install -U "langchain[tzafon]"
+```bash npm
+npm install @tzafon/langchain-tzafon
 ```
-```bash uv
-uv add langchain-tzafon
+```bash pnpm
+pnpm add @tzafon/langchain-tzafon
 ```
 </CodeGroup>
 
@@ -24,16 +24,13 @@ uv add langchain-tzafon
 
 See the [ChatTzafon usage example](/oss/integrations/chat/tzafon).
 
-```python
-from langchain_tzafon import ChatTzafon
-```
+```typescript
+import { ChatTzafon } from "@tzafon/langchain-tzafon";
 
-Or use `init_chat_model` for a unified interface:
-
-```python
-from langchain.chat_models import init_chat_model
-
-model = init_chat_model("tzafon.sm-1")
+const model = new ChatTzafon({
+  model: "tzafon.sm-1",
+  apiKey: process.env.TZAFON_API_KEY,
+});
 ```
 
 ## Available models
@@ -47,5 +44,4 @@ Use the [List Models API](https://docs.tzafon.ai/core-concepts/chat-completions#
 
 ## Document loader
 
-See the [TzafonLoader usage example](/oss/integrations/document_loaders/tzafon).
-
+See the [TzafonLoader usage example](/oss/integrations/document_loaders/web_loaders/tzafon).
