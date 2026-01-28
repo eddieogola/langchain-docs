@@ -175,19 +175,16 @@
     <Tab title="Tzafon">
         👉 Read the [Tzafon chat model integration docs](/oss/python/integrations/providers/tzafon/)
 
-        ```shell
-        pip install -U "langchain[tzafon]"
-        ```
+        <CodeGroup>
+            ```bash pip
+            pip install -U langchain-tzafon
+            ```
+            ```bash uv
+            uv add langchain-tzafon
+            ```
+        </CodeGroup>
 
         <CodeGroup>
-            ```python init_chat_model
-            import os
-            from langchain.chat_models import init_chat_model
-
-            os.environ["TZAFON_API_KEY"] = "..."
-
-            model = init_chat_model("tzafon.sm-1")
-            ```
             ```python Model Class
             import os
             from langchain_tzafon import ChatTzafon

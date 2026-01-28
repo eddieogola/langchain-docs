@@ -12,7 +12,7 @@ Install the integration package:
 
 <CodeGroup>
 ```bash pip
-pip install -U "langchain[tzafon]"
+pip install -U langchain-tzafon
 ```
 ```bash uv
 uv add langchain-tzafon
@@ -42,13 +42,6 @@ model = ChatTzafon(
 )
 ```
 
-Or use `init_chat_model` for a unified interface:
-
-```python
-from langchain.chat_models import init_chat_model
-
-model = init_chat_model("tzafon.sm-1")
-```
 
 ## Invocation
 
