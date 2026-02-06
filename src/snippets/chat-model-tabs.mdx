@@ -172,27 +172,4 @@
             ```
         </CodeGroup>
     </Tab>
-    <Tab title="Tzafon">
-        👉 Read the [Tzafon chat model integration docs](/oss/python/integrations/providers/tzafon/)
-
-        <CodeGroup>
-            ```bash pip
-            pip install -U langchain-tzafon
-            ```
-            ```bash uv
-            uv add langchain-tzafon
-            ```
-        </CodeGroup>
-
-        <CodeGroup>
-            ```python Model Class
-            import os
-            from langchain_tzafon import ChatTzafon
-
-            os.environ["TZAFON_API_KEY"] = "..."
-
-            model = ChatTzafon(model="tzafon.sm-1")
-            ```
-        </CodeGroup>
-    </Tab>
 </Tabs>
