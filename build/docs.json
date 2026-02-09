@@ -315,6 +315,7 @@
                   "group": "Viewing & managing traces",
                   "pages": [
                     "langsmith/filter-traces-in-application",
+                    "langsmith/configure-input-output-preview",
                     "langsmith/export-traces",
                     "langsmith/compare-traces",
                     "langsmith/share-trace",
@@ -392,6 +393,7 @@
                       "group": "Run an evaluation",
                       "pages": [
                         "langsmith/evaluate-llm-application",
+                        "langsmith/evaluate-with-opentelemetry",
                         "langsmith/run-evaluation-from-prompt-playground",
                         "langsmith/run-evals-api-only"
                       ]
@@ -882,8 +884,7 @@
                 "langsmith/agent-builder-tools",
                 "langsmith/agent-builder-remote-mcp-servers",
                 "langsmith/agent-builder-webhooks",
-                "langsmith/agent-builder-slack-app",
-                "langsmith/connect-agent-to-slack"
+                "langsmith/agent-builder-slack-app"
               ]
             },
             {
@@ -905,12 +906,42 @@
         {
           "product": "Open source",
           "icon": "box-open",
-          "description": "Deep Agents, LangChain, and LangGraph",
+          "description": "Build agents with our open source packages",
           "dropdowns": [
             {
               "dropdown": "Python",
               "icon": "python",
               "tabs": [
+                {
+                  "tab": "Deep Agents",
+                  "pages": [
+                    "oss/python/deepagents/overview",
+                    {
+                      "group": "Get started",
+                      "pages": [
+                        "oss/python/deepagents/quickstart",
+                        "oss/python/deepagents/customization"
+                      ]
+                    },
+                    {
+                      "group": "Core capabilities",
+                      "pages": [
+                        "oss/python/deepagents/harness",
+                        "oss/python/deepagents/backends",
+                        "oss/python/deepagents/subagents",
+                        "oss/python/deepagents/human-in-the-loop",
+                        "oss/python/deepagents/long-term-memory",
+                        "oss/python/deepagents/skills"
+                      ]
+                    },
+                    {
+                      "group": "Command line interface",
+                      "pages": [
+                        "oss/python/deepagents/cli"
+                      ]
+                    }
+                  ]
+                },
                 {
                   "tab": "LangChain",
                   "pages": [
@@ -1052,37 +1083,6 @@
                   ]
                 },
                 {
-                  "tab": "Deep Agents",
-                  "pages": [
-                    "oss/python/deepagents/overview",
-                    {
-                      "group": "Get started",
-                      "pages": [
-                        "oss/python/deepagents/quickstart",
-                        "oss/python/deepagents/customization"
-                      ]
-                    },
-                    {
-                      "group": "Core capabilities",
-                      "pages": [
-                        "oss/python/deepagents/harness",
-                        "oss/python/deepagents/backends",
-                        "oss/python/deepagents/subagents",
-                        "oss/python/deepagents/human-in-the-loop",
-                        "oss/python/deepagents/long-term-memory",
-                        "oss/python/deepagents/middleware",
-                        "oss/python/deepagents/skills"
-                      ]
-                    },
-                    {
-                      "group": "Command line interface",
-                      "pages": [
-                        "oss/python/deepagents/cli"
-                      ]
-                    }
-                  ]
-                },
-                {
                   "tab": "Integrations",
                   "pages": [
                     "oss/python/integrations/providers/overview",
@@ -1126,6 +1126,13 @@
                       "group": "Tutorials",
                       "icon": "code",
                       "pages": [
+                        {
+                          "group": "Deep Agents",
+                          "expanded": true,
+                          "pages": [
+                            "oss/python/deepagents/data-analysis"
+                          ]
+                        },
                         {
                           "group": "LangChain",
                           "expanded": true,
@@ -1258,6 +1265,37 @@
               "dropdown": "TypeScript",
               "icon": "square-js",
               "tabs": [
+                {
+                  "tab": "Deep Agents",
+                  "pages": [
+                    "oss/javascript/deepagents/overview",
+                    {
+                      "group": "Get started",
+                      "pages": [
+                        "oss/javascript/deepagents/quickstart",
+                        "oss/javascript/deepagents/customization"
+                      ]
+                    },
+                    {
+                      "group": "Core capabilities",
+                      "pages": [
+                        "oss/javascript/deepagents/harness",
+                        "oss/javascript/deepagents/backends",
+                        "oss/javascript/deepagents/subagents",
+                        "oss/javascript/deepagents/human-in-the-loop",
+                        "oss/javascript/deepagents/long-term-memory",
+                        "oss/javascript/deepagents/skills",
+                        "oss/javascript/deepagents/sandboxes"
+                      ]
+                    },
+                    {
+                      "group": "Deep Agents CLI",
+                      "pages": [
+                        "oss/javascript/deepagents/cli"
+                      ]
+                    }
+                  ]
+                },
                 {
                   "tab": "LangChain",
                   "pages": [
@@ -1394,37 +1432,6 @@
                           ]
                         },
                         "oss/javascript/langgraph/pregel"
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "tab": "Deep Agents",
-                  "pages": [
-                    "oss/javascript/deepagents/overview",
-                    {
-                      "group": "Get started",
-                      "pages": [
-                        "oss/javascript/deepagents/quickstart",
-                        "oss/javascript/deepagents/customization"
-                      ]
-                    },
-                    {
-                      "group": "Core capabilities",
-                      "pages": [
-                        "oss/javascript/deepagents/harness",
-                        "oss/javascript/deepagents/backends",
-                        "oss/javascript/deepagents/subagents",
-                        "oss/javascript/deepagents/human-in-the-loop",
-                        "oss/javascript/deepagents/long-term-memory",
-                        "oss/javascript/deepagents/middleware",
-                        "oss/javascript/deepagents/skills"
-                      ]
-                    },
-                    {
-                      "group": "Deep Agents CLI",
-                      "pages": [
-                        "oss/javascript/deepagents/cli"
                       ]
                     }
                   ]
@@ -1664,6 +1671,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "langsmith/connect-agent-to-slack.mdx",
+      "destination": "/langsmith/agent-builder-slack-app"
+    },
     {
       "source": "langsmith/agent-builder-workspace-vs-private",
       "destination": "/langsmith/agent-builder-visibility"
@@ -2087,6 +2098,14 @@
     {
       "source": "/langsmith/code-evaluator",
       "destination": "/langsmith/code-evaluator-ui"
+    },
+    {
+      "source": "/oss/javascript/deepagents/middleware",
+      "destination": "/oss/javascript/langchain/middleware/built-in"
+    },
+    {
+      "source": "/oss/python/deepagents/middleware",
+      "destination": "/oss/python/langchain/middleware/built-in"
     }
   ]
 }

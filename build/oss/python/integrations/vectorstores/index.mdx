@@ -517,6 +517,35 @@ vector_store = Chroma(
 )
 ```
 </Accordion>
+<Accordion title="CockroachDB">
+
+<CodeGroup>
+```bash pip
+pip install -qU langchain-cockroachdb
+```
+
+```bash uv
+uv add langchain-cockroachdb
+```
+</CodeGroup>
+```python
+from langchain_cockroachdb import AsyncCockroachDBVectorStore, CockroachDBEngine
+
+CONNECTION_STRING = "cockroachdb://user:pass@host:26257/db?sslmode=verify-full"
+
+engine = CockroachDBEngine.from_connection_string(CONNECTION_STRING)
+await engine.ainit_vectorstore_table(
+    table_name="vectors",
+    vector_dimension=1536,
+)
+
+vector_store = AsyncCockroachDBVectorStore(
+    engine=engine,
+    embeddings=embeddings,
+    collection_name="vectors",
+)
+```
+</Accordion>
 <Accordion title="FAISS">
 ```bash
 pip install -qU langchain-community
@@ -715,6 +744,7 @@ vector_store = OracleVS(
 | [`AzureCosmosDBMongoVCoreVectorStore`](/oss/python/integrations/vectorstores/azure_cosmos_db_mongo_vcore) | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | [`Chroma`](/oss/python/integrations/vectorstores/chroma) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`Clickhouse`](/oss/python/integrations/vectorstores/clickhouse) | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| [`AsyncCockroachDBVectorStore`](/oss/python/integrations/vectorstores/cockroachdb) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | [`CouchbaseSearchVectorStore`](/oss/python/integrations/vectorstores/couchbase) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
 | [`DatabricksVectorSearch`](/oss/python/integrations/vectorstores/databricks_vector_search) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
 | [`ElasticsearchStore`](/oss/python/integrations/vectorstores/elasticsearch) | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
@@ -759,6 +789,7 @@ vector_store = OracleVS(
 <Card title="Chroma" icon="link" href="/oss/python/integrations/vectorstores/chroma" arrow="true" cta="View guide"/>
 <Card title="Clarifai" icon="link" href="/oss/python/integrations/vectorstores/clarifai" arrow="true" cta="View guide"/>
 <Card title="ClickHouse" icon="link" href="/oss/python/integrations/vectorstores/clickhouse" arrow="true" cta="View guide"/>
+<Card title="CockroachDB" icon="link" href="/oss/python/integrations/vectorstores/cockroachdb" arrow="true" cta="View guide"/>
 <Card title="Couchbase" icon="link" href="/oss/python/integrations/vectorstores/couchbase" arrow="true" cta="View guide"/>
 <Card title="DashVector" icon="link" href="/oss/python/integrations/vectorstores/dashvector" arrow="true" cta="View guide"/>
 <Card title="Databricks" icon="link" href="/oss/python/integrations/vectorstores/databricks_vector_search" arrow="true" cta="View guide"/>
